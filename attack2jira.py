@@ -93,6 +93,14 @@ class Attack2Jira:
             "techniques": [ ]
         }
 
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
         res_dict=self.jirahandler.get_technique_maturity()
         for key in res_dict.keys():
             enabled = True
@@ -100,15 +108,15 @@ class Attack2Jira:
             #Extract the Technique ID from the title of each JIRA ticket
             if res_dict[key]['value'] == "Not Tracked":
                 enabled=False
-                color = "#DCDCDC"
+                color = not_tracked_color
             elif res_dict[key]['value'] == "Initial":
-                color = "#e1fce1"
+                color = shade_0_color 
             elif res_dict[key]['value'] == "Defined":
-                color = "#81fc81"
+                color = shade_1_color 
             elif res_dict[key]['value'] == "Resilient":
-                color = "#49fc49"
+                color = shade_2_color 
             elif res_dict[key]['value'] == "Optimized":
-                color = "#03ad03"
+                color = shade_3_color 
             
             technique = {
             "techniqueID": key,
