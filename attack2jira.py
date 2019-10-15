@@ -105,7 +105,6 @@ class Attack2Jira:
         for key in res_dict.keys():
             enabled = True
             #print (key +" "+ res_dict[key]['value'])
-            #Extract the Technique ID from the title of each JIRA ticket
             if res_dict[key]['value'] == "Not Tracked":
                 enabled=False
                 color = not_tracked_color

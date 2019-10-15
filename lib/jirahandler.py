@@ -20,7 +20,7 @@ class JiraHandler:
 
         try:
             print("[*] Authenticating to " + url + "...")
-            r = requests.get(url + '/rest/api/2/issue/createmeta', headers=headers,auth=(username,apitoken) ,verify=False)
+            r = requests.get(url + '/rest/api/2/issue/createmeta', headers=headers,auth=(username,apitoken), verify=False)
 
             if r.status_code == 200:
                 self.username=username
@@ -134,7 +134,7 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
         headers = {'Content-Type': 'application/json'}
         try:
-            payload=[{"name":"Not Tracked"},{"name":"Poor"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
             r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the maturity custom field.")
@@ -144,6 +144,7 @@ class JiraHandler:
                        {"name": "exfiltration"}, {"name": "impact"}, {"name": "discovery"}, {"name": "execution"},
                        {"name": "credential-access"}, {"name": "initial-access"}, {"name": "collection"},
                        {"name": "lateral-movement"}, {"name": "persistence"}]
+
             r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['tactic'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the tactic custom field.")
@@ -172,7 +173,6 @@ class JiraHandler:
                 print("[!] Error getting custom fields")
                 sys.exit(1)
 
-            #print("[!] Success!")
             return resp
 
 
@@ -181,7 +181,6 @@ class JiraHandler:
             sys.exit(1)
 
     def remove_unwanted_fields(self):
-
 
         print("[*] Removing unwanted fields from ATTACK's default screen tab ...")
         unwanted_fields=['components','fixVersions','versions','reporter','environment','timetracking','timeoriginalestimate','duedate']
@@ -199,14 +198,11 @@ class JiraHandler:
 
                     else:
                         print("[!] Error removing unwanted fields")
-                        print(r.status_code)
-                        print(r.json())
-                        #sys.exit(1)
+                        sys.exit(1)
 
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
-            #pass
 
     def hide_unwanted_fields(self):
 
@@ -225,7 +221,6 @@ class JiraHandler:
             print (ex)
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
-
 
 
     def do_custom_fields_exist(self):
@@ -251,8 +246,6 @@ class JiraHandler:
                 print ("\t[!] Error creating Jira issue for "+id)
                 sys.exit()
 
-
-
         except Exception as ex:
 
             print(ex)
@@ -260,7 +253,7 @@ class JiraHandler:
             sys.exit()
 
 
-    def get_screens(self):
+    def get_attack_screens(self):
 
         headers = {'Content-Type': 'application/json'}
         screen_ids=[]
@@ -285,7 +278,7 @@ class JiraHandler:
     def get_screen_tabs(self):
 
         headers = {'Content-Type': 'application/json'}
-        screen_ids = self.get_screens()
+        screen_ids = self.get_attack_screens()
         screen_tab_ids=[]
         try:
             for screen_id in screen_ids:
@@ -315,7 +308,6 @@ class JiraHandler:
         try:
             for key in custom_fields.keys():
                 for screen_tab_id in screen_tab_ids:
-
                     custom_field_dict = {'fieldId': custom_fields[key]}
                     #print (self.url + '/rest/api/2/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields')
                     r = requests.post(self.url + '/rest/api/3/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields', json = custom_field_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)
