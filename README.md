@@ -12,8 +12,18 @@ $ pip3 install -r attack2jira/requirements.txt
 ```
  ### Usage
  
+ Print the help menu
+  ```
+ $ python3 attack2jira.py -h
  ```
- $ python3 attack2jira.py
+ 
+ Create the Jira ATTACK project and issues
+ ```
+ $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a initialize
+ ```
+ Export an ATTACK Navigator JSON layer
+ ```
+ $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a export
  ```
  
  ## Authors
