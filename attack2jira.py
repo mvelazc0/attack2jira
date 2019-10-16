@@ -2,7 +2,8 @@ from attackcti import attack_client
 import json, sys, argparse, traceback
 from getpass import getpass
 from lib.jirahandler import JiraHandler
-import re
+from argparse import RawTextHelpFormatter
+
 
 class Attack2Jira:
 
@@ -72,7 +73,7 @@ class Attack2Jira:
 
 
 
-    def generate_json_layer(self):
+    def generate_json_layer(self, hideDisabled):
         VERSION = "2.1"
         NAME = "example"
         DESCRIPTION = "Attack2Jira"
@@ -89,7 +90,7 @@ class Attack2Jira:
             "description": DESCRIPTION,
             "gradient": GRADIENT,
             "version": VERSION,
-            "hideDisabled": True,
+            "hideDisabled": hideDisabled,
             "techniques": [ ]
         }
 
@@ -124,7 +125,7 @@ class Attack2Jira:
             }
             layer_json["techniques"].append(technique)
 
-        print ("[*] Outputting a JSON layer!")
+        print ("[*] Outputting JSON layer attack2jira.json")
         with open('attack2jira.json', 'w', encoding='utf-8') as f:
             json.dump(layer_json, f, ensure_ascii=False, indent=4)
         
@@ -141,26 +142,28 @@ class Attack2Jira:
 
 def main():
 
-    parser = argparse.ArgumentParser()#(description='Process some integers.')
-    parser.add_argument('-url', dest = 'url', type=str, help= 'URL of Jira instance', default="")
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)#(description='Process some integers.')
+    parser.add_argument('-url', dest = 'url', type=str, help= 'Url of Jira instance', default="")
     parser.add_argument('-u', dest = 'user', type=str, help='Username', default="")
-    parser.add_argument('-a', dest='action', type=str, default="", help='action to execute. Two supported: \'create\' and \'createjsonlayer\'')
+    parser.add_argument('-a', dest='action', type=str, default="", help='action to execute. Two supported\n\'initialize\' will create the JIRA entities. \n\'export\' will export the JSON layer.')
+    parser.add_argument('-hide', help='If set, \'Not Tracked\' techniques will be hidden',action='store_true')
     results = parser.parse_args()
 
     url= results.url
     user= results.user
     action = results.action
+    hideDisabled = results.hide
 
     if (url and user and action):
         pswd = getpass('Jira API Token for '+user+":")
 
-        if (action == "create"):
+        if (action == "initialize"):
             attack2jira = Attack2Jira(url, user, pswd)
             attack2jira.set_up_jira_automated()
 
-        if (action == "createjsonlayer"):
+        if (action == "export"):
             attack2jira = Attack2Jira(url, user, pswd)
-            attack2jira.generate_json_layer()
+            attack2jira.generate_json_layer(hideDisabled)
     else:
         parser.print_help()
 
