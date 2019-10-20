@@ -24,6 +24,8 @@ $ pip3 install -r attack2jira/requirements.txt
  Export an ATTACK Navigator JSON layer
  ```
  $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a export
+ 
+ $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a export -hide
  ```
  
  ## Authors
