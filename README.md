@@ -35,6 +35,10 @@ $ pip3 install -r attack2jira/requirements.txt
  
  $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a export -hide
  ```
+ ## Acknoledgments
+ 
+* [MITRE ATT&CK Framework](https://attack.mitre.org)
+* [ATTACK-Python-Client](https://github.com/hunters-forge/ATTACK-Python-Client)
  
  ## Authors
 
