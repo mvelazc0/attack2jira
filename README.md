@@ -6,7 +6,7 @@ At the time of writing, ATT&CK covers 266 Techniques across 12 Tactics. If done 
 
 attack2jira automates the process of standing up a Jira environment that can be used to track and measure ATT&CK coverage.
 
-Visit the Wiki to view the [Demos](https://github.com/mvelazc0/attack2jira/wiki/Demos). attack2jira was first presented at [ATT&CKCCon 2.0](https://www.mitre.org/attackcon). 
+Visit the Wiki to view the [Demos](https://github.com/mvelazc0/attack2jira/wiki/Demos). attack2jira was first presented at [ATT&CKCon 2.0](https://www.mitre.org/attackcon). 
 
 attack2jira has been tested on Kali Linux 2018.4 and Windows 10 1830 under Python 3.6.
 
