@@ -4,7 +4,7 @@ The MITRE ATT&CK Framework is a great tool security teams can leverage to, among
 
 At the time of writing, ATT&CK covers 266 Techniques across 12 Tactics. If done manually, tracking this posture's state over time can become a tedious and challenging task. Blue/Purple teams require the proper tools that allow them to efficiently tackle this challenge and focus on whats important.
 
-attack2jira automates the process of standing up a Jira environment that can be used to track and measure ATT&CK coverage. 
+attack2jira automates the process of standing up a Jira environment that can be used to track and measure ATT&CK coverage. No more spreadsheets !
 
 Visit the Wiki to view the [Demos](https://github.com/mvelazc0/attack2jira/wiki/Demos). attack2jira was first presented at [ATT&CKCon 2.0](https://www.mitre.org/attackcon). For more context, read this [blog post](https://medium.com/@mvelazco/tracking-and-measuring-att-ck-coverage-with-attack2jira-fe700e2a1654).
 
