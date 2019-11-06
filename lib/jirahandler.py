@@ -251,6 +251,7 @@ class JiraHandler:
 
     def create_issue(self, issue_dict, id):
 
+        # good examples https://developer.atlassian.com/server/jira/platform/jira-rest-api-examples/#creating-an-issue-examples
         headers = {'Content-Type': 'application/json'}
         try:
             r = requests.post(self.url + '/rest/api/2/issue', json=issue_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)

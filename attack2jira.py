@@ -49,6 +49,11 @@ class Attack2Jira:
                 url = technique['external_references'][0]['url']
                 tactic = technique['kill_chain_phases'][0]['phase_name']
                 description = technique['description']
+                datasources = technique['x_mitre_data_sources']
+
+                datasources_payload=[]
+                for datasource in datasources:
+                    datasources_payload.append({'value':datasource})
 
                 issue_dict = {
                     "fields": {
@@ -59,15 +64,18 @@ class Attack2Jira:
                         custom_fields['tactic']: {'value': tactic},
                         custom_fields['maturity']: {'value':'Not Tracked'},
                         custom_fields['url']: url,
+                        custom_fields['datasources']: datasources_payload,
                         # "customfield_11050": "Value that we're putting into a Free Text Field."
                     }
                 }
                 jiraclient.create_issue(issue_dict,id)
 
+
             except Exception as ex:
                 print ("\t[*] Could not create ticket for " + id)
-                print(ex)
-                sys.exit()
+                pass
+                #print(ex)
+                #sys.exit()
 
         print ("[*] Done!")
 
@@ -132,11 +140,11 @@ class Attack2Jira:
 
     def set_up_jira_automated(self):
 
-        #self.jirahandler.create_project()
-        #self.jirahandler.create_custom_fields()
-        #self.jirahandler.add_custom_field_options()
-        #self.jirahandler.add_custom_field_to_screen_tab()
-        #self.jirahandler.hide_unwanted_fields()
+        self.jirahandler.create_project()
+        self.jirahandler.create_custom_fields()
+        self.jirahandler.add_custom_field_options()
+        self.jirahandler.add_custom_field_to_screen_tab()
+        self.jirahandler.hide_unwanted_fields()
         self.create_attack_techniques()
 
 
