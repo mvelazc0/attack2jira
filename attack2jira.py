@@ -132,11 +132,11 @@ class Attack2Jira:
 
     def set_up_jira_automated(self):
 
-        self.jirahandler.create_project()
-        self.jirahandler.create_custom_fields()
-        self.jirahandler.add_custom_field_options()
-        self.jirahandler.add_custom_field_to_screen_tab()
-        self.jirahandler.hide_unwanted_fields()
+        #self.jirahandler.create_project()
+        #self.jirahandler.create_custom_fields()
+        #self.jirahandler.add_custom_field_options()
+        #self.jirahandler.add_custom_field_to_screen_tab()
+        #self.jirahandler.hide_unwanted_fields()
         self.create_attack_techniques()
 
 
