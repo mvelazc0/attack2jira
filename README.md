@@ -8,6 +8,8 @@ attack2jira automates the process of standing up a Jira environment that can be 
 
 Visit the Wiki to view the [Demos](https://github.com/mvelazc0/attack2jira/wiki/Demos). attack2jira was first presented at [ATT&CKCon 2.0](https://www.mitre.org/attackcon). For more context, read this [blog post](https://medium.com/@mvelazco/tracking-and-measuring-att-ck-coverage-with-attack2jira-fe700e2a1654).
 
+To allow the community to experiment with this approach, I created a Jira instance hosting the ATTACK project with attack2jira and made anonymously accessible: [https://attack.atlassian.net](https://attack.atlassian.net)
+
 attack2jira has been tested on Kali Linux 2018.4 and Windows 10 1830 under Python 3.6.
 
 ## Quick Start Guide
