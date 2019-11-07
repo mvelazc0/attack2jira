@@ -1,3 +1,4 @@
+from attackcti import attack_client
 import requests
 import sys, traceback, json, re
 import urllib3
@@ -83,14 +84,7 @@ class JiraHandler:
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
                 }
                 custom_fields.append(custom_field1_dict)
-                """
-                custom_field2_dict = {
-                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
-                    "name": "maturity",
-                    "description": "Detection Maturity",
-                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
-                }
-                """
+
                 custom_field2_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
                     "name": "maturity",
@@ -106,6 +100,22 @@ class JiraHandler:
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:url"
                 }
                 custom_fields.append(custom_field3_dict)
+
+                custom_field4_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "datasources",
+                    "description": "Data Sources",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:multiselect"
+                }
+                custom_fields.append(custom_field4_dict)
+
+                custom_field5_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
+                    "name": "id",
+                    "description": "Technique Id",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
+                }
+                custom_fields.append(custom_field5_dict)
 
                 for custom_field in custom_fields:
                     r = requests.post(self.url + '/rest/api/3/field', json=custom_field, headers=headers, auth=(self.username, self.apitoken), verify=False)
@@ -134,12 +144,16 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
         headers = {'Content-Type': 'application/json'}
         try:
+
+            # maturity field options
             payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
             r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the maturity custom field.")
                 sys.exit()
 
+            # tactic field options
+            # TODO: instead of creating fixed tactics, this should leverage attackcti
             payload = [{"name": "command-and-control"}, {"name": "privilege-escalation"}, {"name": "defense-evasion"},
                        {"name": "exfiltration"}, {"name": "impact"}, {"name": "discovery"}, {"name": "execution"},
                        {"name": "credential-access"}, {"name": "initial-access"}, {"name": "collection"},
@@ -150,6 +164,14 @@ class JiraHandler:
                 print("[!] Error creating options for the tactic custom field.")
                 sys.exit()
 
+            # data source field options
+            payload = self.get_attack_datasources()
+            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the datasources custom field.")
+                sys.exit()
+
+
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
@@ -157,7 +179,7 @@ class JiraHandler:
     def get_custom_fields(self):
 
         #print("[*] Getting custom field ids ...")
-        custom_fields=['tactic','maturity','url']
+        custom_fields=['tactic','maturity','url','datasources','id']
         headers = {'Content-Type': 'application/json'}
         resp = dict()
 
@@ -211,7 +233,8 @@ class JiraHandler:
         headers = {'Content-Type': 'application/json'}
 
         #json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
-        json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"},{"id":"labels","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        #json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"},{"id":"labels","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"}],"secondary":[{"id":"labels","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
 
         try:
             for screen_tab_id in screen_tab_ids:
@@ -229,7 +252,7 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
 
         ## TODO: Need to perform better checks but this works for now.
-        if len(custom_fields.keys()) == 3:
+        if len(custom_fields.keys()) == 5:
             return True
         else:
             return False
@@ -237,6 +260,7 @@ class JiraHandler:
 
     def create_issue(self, issue_dict, id):
 
+        # good examples https://developer.atlassian.com/server/jira/platform/jira-rest-api-examples/#creating-an-issue-examples
         headers = {'Content-Type': 'application/json'}
         try:
             r = requests.post(self.url + '/rest/api/2/issue', json=issue_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)
@@ -350,3 +374,33 @@ class JiraHandler:
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
+
+
+    def get_attack_datasources(self):
+
+        try:
+            datasource_payload=[]
+            client = attack_client()
+            datasources = client.get_data_sources()
+            for datasource in datasources:
+                dict = {'name': datasource}
+                datasource_payload.append(dict)
+            return datasource_payload
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error connecting obtaining datasources from Att&ck's API !")
+            sys.exit()
+
+    def get_attack_tactics(self):
+
+        try:
+            tactics_payload=[]
+            client = attack_client()
+            tactics = client.get_tactics()
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error connecting obtaining tactics from Att&ck's API !")
+            sys.exit()
+

@@ -49,25 +49,35 @@ class Attack2Jira:
                 url = technique['external_references'][0]['url']
                 tactic = technique['kill_chain_phases'][0]['phase_name']
                 description = technique['description']
+                datasources = technique['x_mitre_data_sources']
+
+                datasources_payload=[]
+                for datasource in datasources:
+                    datasources_payload.append({'value':datasource})
 
                 issue_dict = {
                     "fields": {
                         "project": {"key": "ATTACK"},
-                        "summary":  name + " (" + id + ")",
+                        #"summary":  name + " (" + id + ")",
+                        "summary": name,
                         "description": description,
                         "issuetype": {"name": "Task"},
+                        custom_fields['id']: id,
                         custom_fields['tactic']: {'value': tactic},
                         custom_fields['maturity']: {'value':'Not Tracked'},
                         custom_fields['url']: url,
+                        custom_fields['datasources']: datasources_payload,
                         # "customfield_11050": "Value that we're putting into a Free Text Field."
                     }
                 }
                 jiraclient.create_issue(issue_dict,id)
 
+
             except Exception as ex:
                 print ("\t[*] Could not create ticket for " + id)
-                print(ex)
-                sys.exit()
+                pass
+                #print(ex)
+                #sys.exit()
 
         print ("[*] Done!")
 
