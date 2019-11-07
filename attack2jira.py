@@ -58,9 +58,11 @@ class Attack2Jira:
                 issue_dict = {
                     "fields": {
                         "project": {"key": "ATTACK"},
-                        "summary":  name + " (" + id + ")",
+                        #"summary":  name + " (" + id + ")",
+                        "summary": name,
                         "description": description,
                         "issuetype": {"name": "Task"},
+                        custom_fields['id']: id,
                         custom_fields['tactic']: {'value': tactic},
                         custom_fields['maturity']: {'value':'Not Tracked'},
                         custom_fields['url']: url,

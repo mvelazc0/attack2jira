@@ -109,6 +109,14 @@ class JiraHandler:
                 }
                 custom_fields.append(custom_field4_dict)
 
+                custom_field5_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
+                    "name": "id",
+                    "description": "Technique Id",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
+                }
+                custom_fields.append(custom_field5_dict)
+
                 for custom_field in custom_fields:
                     r = requests.post(self.url + '/rest/api/3/field', json=custom_field, headers=headers, auth=(self.username, self.apitoken), verify=False)
 
@@ -171,7 +179,7 @@ class JiraHandler:
     def get_custom_fields(self):
 
         #print("[*] Getting custom field ids ...")
-        custom_fields=['tactic','maturity','url','datasources']
+        custom_fields=['tactic','maturity','url','datasources','id']
         headers = {'Content-Type': 'application/json'}
         resp = dict()
 
@@ -225,7 +233,8 @@ class JiraHandler:
         headers = {'Content-Type': 'application/json'}
 
         #json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
-        json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"},{"id":"labels","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        #json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"},{"id":"labels","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"}],"secondary":[{"id":"labels","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
 
         try:
             for screen_tab_id in screen_tab_ids:
@@ -243,7 +252,7 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
 
         ## TODO: Need to perform better checks but this works for now.
-        if len(custom_fields.keys()) == 4:
+        if len(custom_fields.keys()) == 5:
             return True
         else:
             return False
