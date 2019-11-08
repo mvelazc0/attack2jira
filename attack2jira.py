@@ -49,11 +49,13 @@ class Attack2Jira:
                 url = technique['external_references'][0]['url']
                 tactic = technique['kill_chain_phases'][0]['phase_name']
                 description = technique['description']
-                datasources = technique['x_mitre_data_sources']
 
-                datasources_payload=[]
-                for datasource in datasources:
-                    datasources_payload.append({'value':datasource})
+                # some techniques dont have the field populated
+                if 'x_mitre_data_sources' in technique.keys(): datasources = technique['x_mitre_data_sources']
+                else: datasources = []
+
+                ds_payload=[]
+                for ds in datasources: ds_payload.append({'value':ds})
 
                 issue_dict = {
                     "fields": {
@@ -66,7 +68,7 @@ class Attack2Jira:
                         custom_fields['tactic']: {'value': tactic},
                         custom_fields['maturity']: {'value':'Not Tracked'},
                         custom_fields['url']: url,
-                        custom_fields['datasources']: datasources_payload,
+                        custom_fields['datasources']: ds_payload,
                         # "customfield_11050": "Value that we're putting into a Free Text Field."
                     }
                 }
