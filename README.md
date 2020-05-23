@@ -8,9 +8,11 @@ attack2jira automates the process of standing up a Jira environment that can be 
 
 Visit the Wiki to view the [Demos](https://github.com/mvelazc0/attack2jira/wiki/Demos). attack2jira was first presented at [ATT&CKCon 2.0](https://www.mitre.org/attackcon). For more context, read this [blog post](https://medium.com/@mvelazco/tracking-and-measuring-att-ck-coverage-with-attack2jira-fe700e2a1654).
 
-To allow the community to experiment with this approach, I created a Jira instance hosting the ATTACK project with attack2jira and made anonymously accessible: [https://attack.atlassian.net](https://attack.atlassian.net/projects/ATTACK/issues)
+To allow the community to experiment with this approach, I created a Jira instance hosting the ATTACK project with attack2jira: [https://attack.atlassian.net](https://attack.atlassian.net/projects/ATTACK/issues)
 
-attack2jira has been tested on Kali Linux 2018.4 and Windows 10 1830 under Python 3.6.
+attack2jira was designed to be used with Jira Cloud. Specifically, [Jira Software](https://www.atlassian.com/software). 
+
+Tested on Kali Linux 2018.4 and Windows 10 1830 under Python 3.6 and Python 3.7.
 
 ## Quick Start Guide
 
@@ -20,7 +22,12 @@ attack2jira has been tested on Kali Linux 2018.4 and Windows 10 1830 under Pytho
 $ git clone https://github.com/mvelazc0/attack2jira.git
 $ pip3 install -r attack2jira/requirements.txt
 ```
- ### Usage
+ ### Jira Software
+ 
+ - You will need a [Jira Software Cloud](https://www.atlassian.com/software) environment.
+ - You can set up a [free trial](https://www.atlassian.com/software/jira/free) environment for up to 10 users [here](https://www.atlassian.com/try/cloud/signup?bundle=jira-software&edition=free). 
+
+### Usage
  
  Print the help menu
   ```
@@ -29,13 +36,13 @@ $ pip3 install -r attack2jira/requirements.txt
  
  Create the Jira ATTACK project and issues
  ```
- $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a initialize
+ $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a initialize
  ```
  Export an ATTACK Navigator JSON layer
  ```
- $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a export
+ $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a export
  
- $ python3 attack2jira.py -url https://attack.atlassian.net -u user@email.com -a export -hide
+ $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a export -hide
  ```
  ## Acknoledgments
  
