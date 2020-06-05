@@ -360,7 +360,7 @@ class JiraHandler:
                 r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
                 resp_dict = r.json()
                 for issue in resp_dict['issues']:
-                    technique_id=re.search(r"\(([A-Za-z0-9_]+)\)", issue['fields']['summary']).group(1)
+                    technique_id = issue['fields'][custom_fields['id']]
                     #print (issue['fields']['summary']," ",issue['fields'][custom_fields['maturity']] )
                     #print(technique_id, " ", issue['fields'][custom_fields['maturity']])
                     res_dict.update({technique_id:issue['fields'][custom_fields['maturity']]})

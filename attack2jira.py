@@ -86,8 +86,8 @@ class Attack2Jira:
 
 
     def generate_json_layer(self, hideDisabled):
-        VERSION = "2.1"
-        NAME = "example"
+        VERSION = "2.2"
+        NAME = "Attack2Jira"
         DESCRIPTION = "Attack2Jira"
         DOMAIN = "mitre-enterprise"
         GRADIENT = {
