@@ -153,12 +153,7 @@ class JiraHandler:
                 sys.exit()
 
             # tactic field options
-            # TODO: instead of creating fixed tactics, this should leverage attackcti
-            payload = [{"name": "command-and-control"}, {"name": "privilege-escalation"}, {"name": "defense-evasion"},
-                       {"name": "exfiltration"}, {"name": "impact"}, {"name": "discovery"}, {"name": "execution"},
-                       {"name": "credential-access"}, {"name": "initial-access"}, {"name": "collection"},
-                       {"name": "lateral-movement"}, {"name": "persistence"}]
-
+            payload = self.get_attack_tactics()
             r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['tactic'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the tactic custom field.")
@@ -397,7 +392,11 @@ class JiraHandler:
         try:
             tactics_payload=[]
             client = attack_client()
-            tactics = client.get_tactics()
+            enterprise_tactics = client.get_enterprise()
+            tactics = [tactic['name'].lower().replace(" ", "-") for tactic in enterprise_tactics['tactics']]
+            for tactic in tactics:
+                tactics_payload.append({"name": tactic})
+            return tactics_payload
 
         except:
             traceback.print_exc(file=sys.stdout)
