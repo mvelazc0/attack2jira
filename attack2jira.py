@@ -22,8 +22,10 @@ class Attack2Jira:
             all_enterprise = client.get_enterprise()
             techniques = []
             for technique in all_enterprise['techniques']:
-                techniques.append(json.loads(technique.serialize()))
-
+                tech= json.loads(technique.serialize())
+                # avoid bringing in the revoked techniques
+                if not 'revoked' in tech.keys():
+                    techniques.append(tech)
             print ("[!] Done!")
             return techniques
 
@@ -77,6 +79,8 @@ class Attack2Jira:
 
             except Exception as ex:
                 print ("\t[*] Could not create ticket for " + id)
+                print(ex)
+                traceback.print_exc(file=sys.stdout)
                 pass
                 #print(ex)
                 #sys.exit()
