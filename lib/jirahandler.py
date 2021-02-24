@@ -376,9 +376,9 @@ class JiraHandler:
         try:
             datasource_payload=[]
             client = attack_client()
-            datasources = client.get_data_sources()
+            datasources = list(set(ds.lower() for ds in client.get_data_sources()))
             for datasource in datasources:
-                dict = {'name': datasource}
+                dict = {'name': datasource.title()}
                 datasource_payload.append(dict)
             return datasource_payload
 

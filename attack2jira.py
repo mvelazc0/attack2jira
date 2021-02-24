@@ -57,7 +57,7 @@ class Attack2Jira:
                 else: datasources = []
 
                 ds_payload=[]
-                for ds in datasources: ds_payload.append({'value':ds})
+                for ds in datasources: ds_payload.append({'value':ds.title()})
 
                 issue_dict = {
                     "fields": {
