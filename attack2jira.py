@@ -35,7 +35,7 @@ class Attack2Jira:
             return
 
 
-    def create_attack_techniques(self):
+    def create_attack_techniques(self, key):
 
         techniques = self.get_attack_techniques()
         jiraclient = self.jirahandler
@@ -61,9 +61,9 @@ class Attack2Jira:
 
                 issue_dict = {
                     "fields": {
-                        "project": {"key": "ATTACK"},
-                        #"summary":  name + " (" + id + ")",
-                        "summary": name,
+                        "project": {"key": key},
+                        "summary":  name + " (" + id + ")",
+                        #"summary": name,
                         "description": description,
                         "issuetype": {"name": "Task"},
                         custom_fields['id']: id,
@@ -146,22 +146,24 @@ class Attack2Jira:
             json.dump(layer_json, f, ensure_ascii=False, indent=4)
         
 
-    def set_up_jira_automated(self):
+    def set_up_jira_automated(self, project, key):
 
-        self.jirahandler.create_project()
+        self.jirahandler.create_project(project, key)
         self.jirahandler.create_custom_fields()
         self.jirahandler.add_custom_field_options()
-        self.jirahandler.add_custom_field_to_screen_tab()
-        self.jirahandler.hide_unwanted_fields()
-        self.create_attack_techniques()
+        self.jirahandler.add_custom_field_to_screen_tab(key)
+        self.jirahandler.hide_unwanted_fields(key)
+        self.create_attack_techniques(key)
 
 
 def main():
 
-    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)#(description='Process some integers.')
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument('-url', dest = 'url', type=str, help= 'Url of Jira instance', default="")
     parser.add_argument('-u', dest = 'user', type=str, help='Username', default="")
-    parser.add_argument('-a', dest='action', type=str, default="", help='action to execute. Two supported\n\'initialize\' will create the JIRA entities. \n\'export\' will export the JSON layer.')
+    parser.add_argument('-a', dest='action', type=str, default="", help='action to execute\nTwo supported:\n\'initialize\' will create the JIRA entities. \n\'export\' will export the JSON layer.')
+    parser.add_argument('-p', dest = 'project', type=str, help='Name of the Jira project to create.', default="Mitre Attack Framework")
+    parser.add_argument('-k', dest = 'key', type=str, help='Project Key.(default=\'ATTACK\')', default="ATTACK")
     parser.add_argument('-hide', help='If set, \'Not Tracked\' techniques will be hidden',action='store_true')
     results = parser.parse_args()
 
@@ -169,13 +171,15 @@ def main():
     user= results.user
     action = results.action
     hideDisabled = results.hide
+    project = results.project
+    key = results.key
 
     if (url and user and action):
         pswd = getpass('Jira API Token for '+user+":")
 
         if (action == "initialize"):
             attack2jira = Attack2Jira(url, user, pswd)
-            attack2jira.set_up_jira_automated()
+            attack2jira.set_up_jira_automated(project, key)
 
         if (action == "export"):
             attack2jira = Attack2Jira(url, user, pswd)
@@ -187,6 +191,7 @@ if __name__ == '__main__':
 
     try:
        main()
+
 
     except KeyboardInterrupt:
         print("\n")

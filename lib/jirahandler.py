@@ -38,7 +38,7 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
 
-    def create_project(self):
+    def create_project(self, project, key):
 
         #https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-rest-api-3-project-post -> this did not work for me.
         #found this endpoint using chrome dev tools.
@@ -46,8 +46,8 @@ class JiraHandler:
         headers = {'Content-Type': 'application/json'}
 
         project_dict = {
-            'key': 'ATTACK',
-            'name': 'Mitre Attack Framework',
+            'key': key,
+            'name': project,
             'templateKey': "com.pyxis.greenhopper.jira:gh-simplified-basic",
         }
         try:
@@ -221,10 +221,10 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
 
-    def hide_unwanted_fields(self):
+    def hide_unwanted_fields(self,key):
 
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
-        screen_tab_ids = self.get_screen_tabs()
+        screen_tab_ids = self.get_screen_tabs(key)
         headers = {'Content-Type': 'application/json'}
 
         #json_string = u'{"contextItemsCategories":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"releases","type":"RELEASES_PANEL"},{"id":"customfield_10041","type":"FIELD"},{"id":"timeoriginalestimate","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"timetracking","type":"FIELD"}]},"contentItemsCategories":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
@@ -233,7 +233,7 @@ class JiraHandler:
 
         try:
             for screen_tab_id in screen_tab_ids:
-                r = requests.put(self.url + '/rest/api/2/project/ATTACK/properties/viewScreenId-'+str(screen_tab_id[0]), data=json_string, headers=headers, auth=(self.username, self.apitoken), verify=False)
+                r = requests.put(self.url + '/rest/api/2/project/'+key+'/properties/viewScreenId-'+str(screen_tab_id[0]), data=json_string, headers=headers, auth=(self.username, self.apitoken), verify=False)
             print("[!] Done.")
 
         except Exception as ex:
@@ -273,7 +273,7 @@ class JiraHandler:
             sys.exit()
 
 
-    def get_attack_screens(self):
+    def get_attack_screens(self, key):
 
         headers = {'Content-Type': 'application/json'}
         screen_ids=[]
@@ -283,7 +283,7 @@ class JiraHandler:
             if r.status_code == 200:
                 results = r.json()['values']
                 for r in results:
-                    if "ATTACK" in r['name'] and "Default Issue Screen" in r['name']:
+                    if key in r['name'] and "Default Issue Screen" in r['name']:
                         screen_ids.append(r['id'])
             else:
                 print("[!] Error obtaining screens")
@@ -295,10 +295,10 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
 
-    def get_screen_tabs(self):
+    def get_screen_tabs(self, key):
 
         headers = {'Content-Type': 'application/json'}
-        screen_ids = self.get_attack_screens()
+        screen_ids = self.get_attack_screens(key)
         screen_tab_ids=[]
         try:
             for screen_id in screen_ids:
@@ -318,11 +318,11 @@ class JiraHandler:
             sys.exit()
 
 
-    def add_custom_field_to_screen_tab(self):
+    def add_custom_field_to_screen_tab(self, key):
 
         print("[*] Adding custom fields to ATTACK's default screen tab ...")
         headers = {'Content-Type': 'application/json'}
-        screen_tab_ids = self.get_screen_tabs()
+        screen_tab_ids = self.get_screen_tabs(key)
         custom_fields = self.get_custom_fields()
 
         try:
