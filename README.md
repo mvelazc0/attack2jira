@@ -26,6 +26,7 @@ $ pip3 install -r attack2jira/requirements.txt
  
  - You will need a [Jira Software Cloud](https://www.atlassian.com/software) environment.
  - You can set up a [free trial](https://www.atlassian.com/software/jira/free) environment for up to 10 users [here](https://www.atlassian.com/try/cloud/signup?bundle=jira-software&edition=free). 
+- Admin access is required
 
 ### Usage
  
@@ -37,6 +38,10 @@ $ pip3 install -r attack2jira/requirements.txt
  Create the Jira ATTACK project and issues
  ```
  $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a initialize
+ ```
+  Create the Jira ATTACK project with custom project and key 
+ ```
+ $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a initialize -p 'ATTACK Coverage' -k ATT
  ```
  Export an ATTACK Navigator JSON layer
  ```
