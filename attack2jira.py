@@ -87,6 +87,180 @@ class Attack2Jira:
 
         print ("[*] Done!")
 
+    def create_attack_techniques2(self, key):
+
+        jiraclient = self.jirahandler
+        techniques = self.get_attack_techniques()
+        sorted_techniques = sorted(techniques, key=lambda k: k['external_references'][0]['external_id'])
+
+        print ("[*] Creating Jira issues for ATT&CK's techniques...")
+
+        for technique in sorted_techniques:
+            try:
+                custom_fields = self.jirahandler.get_custom_fields()
+
+                name = technique['name']
+                id = technique['external_references'][0]['external_id']
+                url = technique['external_references'][0]['url']
+                tactic = technique['kill_chain_phases'][0]['phase_name']
+                description = technique['description']
+
+                # some techniques dont have the field populated
+                if 'x_mitre_data_sources' in technique.keys():
+                    datasources = technique['x_mitre_data_sources']
+                else:
+                    datasources = []
+
+                ds_payload = []
+                for ds in datasources: ds_payload.append({'value':ds.title()})
+
+                if not technique ['x_mitre_is_subtechnique']:
+                # Not a sub-technique
+                    issue_dict = {
+                        "fields": {
+                            "project": {"key": key },
+                            "summary":  name + " (" + id + ")",
+                            #"summary": name,
+                            "description": description,
+                            "issuetype": {"name": "Task"},
+                            custom_fields['id']: id,
+                            custom_fields['tactic']: {'value': tactic},
+                            custom_fields['maturity']: {'value': 'Not Tracked'},
+                            custom_fields['url']: url,
+                            custom_fields['datasources']: ds_payload,
+                            # "customfield_11050": "Value that we're putting into a Free Text Field."
+                        }
+                    }
+                    print("Creating Technique")
+                    parent_id= jiraclient.create_issue(issue_dict, id)
+                    print("Created Technique with id : "+ str(parent_id))
+
+                else:
+                # Sub-technique
+                    issue_dict = {
+                        "fields": {
+                            "parent": {"id": parent_id['id']},
+                            "project": {"key": key},
+                            "summary":  name + " (" + id + ")",
+                            #"summary": name,
+                            "description": description,
+                            "issuetype": {"name": "Sub-task"},
+                            custom_fields['id']: id,
+                            custom_fields['tactic']: {'value': tactic},
+                            custom_fields['maturity']: {'value': 'Not Tracked'},
+                            custom_fields['url']: url,
+                            custom_fields['datasources']: ds_payload,
+                        },
+                        "update": {
+                            "issuelinks": [
+                                {
+                                    "add": {
+                                        "type": {
+                                            "name": "Relates",
+                                            #"inward": "relates to",
+                                            "outward": "relates to"
+                                        },
+                                        "outwardIssue": {
+                                            "key": parent_id['key']
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                    print("Creating sub Technique under parent " + str(parent_id))
+                    ret_id= jiraclient.create_issue(issue_dict, id)
+                    print("Created sub Technique with id : "+ str(ret_id))
+
+            except Exception as ex:
+                print("\t[*] Could not create ticket for " + id)
+                print(ex)
+                traceback.print_exc(file=sys.stdout)
+                pass
+                # print(ex)
+                # sys.exit()
+
+        print("[*] Done!")
+
+
+    def create_attack_techniques3(self, key):
+
+        jiraclient = self.jirahandler
+        techniques = self.get_attack_techniques()
+        sorted_techniques = sorted(techniques, key=lambda k: k['external_references'][0]['external_id'])
+
+        print ("[*] Creating Jira issues for ATT&CK's techniques...")
+
+        for technique in sorted_techniques:
+            try:
+                custom_fields = self.jirahandler.get_custom_fields()
+
+                name = technique['name']
+                id = technique['external_references'][0]['external_id']
+                url = technique['external_references'][0]['url']
+                tactic = technique['kill_chain_phases'][0]['phase_name']
+                description = technique['description']
+
+                # some techniques dont have the field populated
+                if 'x_mitre_data_sources' in technique.keys():
+                    datasources = technique['x_mitre_data_sources']
+                else:
+                    datasources = []
+
+                ds_payload = []
+                for ds in datasources: ds_payload.append({'value':ds.title()})
+
+                if not technique ['x_mitre_is_subtechnique']:
+                # Not a sub-technique
+                    issue_dict = {
+                        "fields": {
+                            "project": {"key": key },
+                            "summary":  name + " (" + id + ")",
+                            #"summary": name,
+                            "description": description,
+                            "issuetype": {"name": "Task"},
+                            custom_fields['id']: id,
+                            custom_fields['tactic']: {'value': tactic},
+                            custom_fields['maturity']: {'value': 'Not Tracked'},
+                            custom_fields['url']: url,
+                            custom_fields['datasources']: ds_payload,
+                            # "customfield_11050": "Value that we're putting into a Free Text Field."
+                        }
+                    }
+                    print("Creating Technique")
+                    parent_id= jiraclient.create_issue(issue_dict, id)
+                    print("Created Technique with id : "+ str(parent_id))
+
+                else:
+                # Sub-technique
+                    issue_dict = {
+                        "fields": {
+                            "parent": {"id": parent_id['id']},
+                            "project": {"key": key},
+                            "summary":  name + " (" + id + ")",
+                            #"summary": name,
+                            "description": description,
+                            "issuetype": {"name": "Sub-task"},
+                            custom_fields['id']: id,
+                            custom_fields['tactic']: {'value': tactic},
+                            custom_fields['maturity']: {'value': 'Not Tracked'},
+                            custom_fields['url']: url,
+                            custom_fields['datasources']: ds_payload,
+                        }
+                    }
+                    print("Creating sub Technique under parent " + str(parent_id))
+                    ret_id= jiraclient.create_issue(issue_dict, id)
+                    print("Created sub Technique with id : "+ str(ret_id))
+
+            except Exception as ex:
+                print("\t[*] Could not create ticket for " + id)
+                print(ex)
+                traceback.print_exc(file=sys.stdout)
+                pass
+                # print(ex)
+                # sys.exit()
+
+        print("[*] Done!")
 
 
     def generate_json_layer(self, hideDisabled):
@@ -153,7 +327,7 @@ class Attack2Jira:
         self.jirahandler.add_custom_field_options()
         self.jirahandler.add_custom_field_to_screen_tab(key)
         self.jirahandler.hide_unwanted_fields(key)
-        self.create_attack_techniques(key)
+        self.create_attack_techniques2(key)
 
 
 def main():

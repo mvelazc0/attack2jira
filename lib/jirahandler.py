@@ -262,8 +262,10 @@ class JiraHandler:
 
             if r.status_code == 201:
                 print ("\t[!] Successfully created Jira issue for "+id)
+                return json.loads(r.text)
             else:
                 print ("\t[!] Error creating Jira issue for "+id)
+                print (r.text)
                 sys.exit()
 
         except Exception as ex:
