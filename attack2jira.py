@@ -434,7 +434,7 @@ class Attack2Jira:
         self.jirahandler.create_custom_fields()
         self.jirahandler.add_custom_field_options()
         self.jirahandler.add_custom_field_to_screen_tab(key)
-        self.jirahandler.hide_unwanted_fields(key)
+        self.jirahandler.hide_unwanted_fields2(key)
         self.create_attack_techniques4(key)
 
 
