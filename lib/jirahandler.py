@@ -79,7 +79,7 @@ class JiraHandler:
                 custom_fields=[]
                 custom_field1_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "tactic",
+                    "name": "Tactic",
                     "description": "Attack Tactic",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
                 }
@@ -87,7 +87,7 @@ class JiraHandler:
 
                 custom_field2_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "maturity",
+                    "name": "Maturity",
                     "description": "Detection Maturity",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
                 }
@@ -95,7 +95,7 @@ class JiraHandler:
 
                 custom_field3_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher",
-                    "name": "url",
+                    "name": "Url",
                     "description": "Attack Technique Url",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:url"
                 }
@@ -103,7 +103,7 @@ class JiraHandler:
 
                 custom_field4_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "datasources",
+                    "name": "Datasources",
                     "description": "Data Sources",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:multiselect"
                 }
@@ -111,11 +111,19 @@ class JiraHandler:
 
                 custom_field5_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
-                    "name": "id",
+                    "name": "Id",
                     "description": "Technique Id",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
                 }
                 custom_fields.append(custom_field5_dict)
+
+                custom_field6_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
+                    "name": "Sub-Technique of",
+                    "description": "Parent Technique Id",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
+                }
+                custom_fields.append(custom_field6_dict)
 
                 for custom_field in custom_fields:
                     r = requests.post(self.url + '/rest/api/3/field', json=custom_field, headers=headers, auth=(self.username, self.apitoken), verify=False)
@@ -147,21 +155,21 @@ class JiraHandler:
 
             # maturity field options
             payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
-            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the maturity custom field.")
                 sys.exit()
 
             # tactic field options
             payload = self.get_attack_tactics()
-            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['tactic'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
+            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['Tactic'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the tactic custom field.")
                 sys.exit()
 
             # data source field options
             payload = self.get_attack_datasources()
-            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
+            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['Datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the datasources custom field.")
                 sys.exit()
@@ -174,7 +182,7 @@ class JiraHandler:
     def get_custom_fields(self):
 
         #print("[*] Getting custom field ids ...")
-        custom_fields=['tactic','maturity','url','datasources','id']
+        custom_fields=['Tactic','Maturity','Url','Datasources','Id','Sub-Technique of']
         headers = {'Content-Type': 'application/json'}
         resp = dict()
 
@@ -271,7 +279,7 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
 
         ## TODO: Need to perform better checks but this works for now.
-        if len(custom_fields.keys()) == 5:
+        if len(custom_fields.keys()) == 6:
             return True
         else:
             return False
@@ -384,7 +392,7 @@ class JiraHandler:
                     technique_id = issue['fields'][custom_fields['id']]
                     #print (issue['fields']['summary']," ",issue['fields'][custom_fields['maturity']] )
                     #print(technique_id, " ", issue['fields'][custom_fields['maturity']])
-                    res_dict.update({technique_id:issue['fields'][custom_fields['maturity']]})
+                    res_dict.update({technique_id:issue['fields'][custom_fields['Maturity']]})
                 read_issues+=50
                 startAt+=50
                 if (read_issues>=r.json()['total']):
