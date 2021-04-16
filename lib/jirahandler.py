@@ -205,34 +205,8 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
 
-    """
-    def remove_unwanted_fields(self):
-
-        print("[*] Removing unwanted fields from ATTACK's default screen tab ...")
-        unwanted_fields=['components','fixVersions','versions','reporter','environment','timetracking','timeoriginalestimate','duedate']
-        screen_tab_ids = self.get_screen_tabs()
-
-        headers = {'Content-Type': 'application/json'}
-        try:
-
-            for screen_tab_id in screen_tab_ids:
-                for unwanted_field in unwanted_fields:
-
-                    r = requests.delete(self.url + '/rest/api/2/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields/'+unwanted_field+'?undefined', headers=headers, auth=(self.username, self.apitoken), verify=False)
-                    if r.status_code == 204:
-                        print(r.status_code)
-
-                    else:
-                        print("[!] Error removing unwanted fields")
-                        sys.exit(1)
-
-        except Exception as ex:
-            traceback.print_exc(file=sys.stdout)
-            sys.exit(1)
-    """
-
-    def hide_unwanted_fields(self,key):
-
+    def hide_unwanted_fields_old(self,key):
+    # Deprecated, keeping in just in case.
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
         screen_tab_ids = self.get_screen_tabs(key)
         headers = {'Content-Type': 'application/json'}
@@ -251,7 +225,7 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
     
-    def hide_unwanted_fields2(self,key):
+    def hide_unwanted_fields(self,key):
 
         #https://support.atlassian.com/jira-core-cloud/docs/configure-field-layout-in-the-issue-view/
         #https://jira.atlassian.com/browse/JRACLOUD-74697?error=login_required&error_description=Login+required&state=0c1a9f1d-8614-4158-b02e-f06e8706f5d4
@@ -261,7 +235,8 @@ class JiraHandler:
         screen_tab_ids = self.get_screen_tabs(key)
         headers = {'Content-Type': 'application/json'}
 
-        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"customfield_10094","type":"FIELD"},{"id":"customfield_10092","type":"FIELD"},{"id":"customfield_10090","type":"FIELD"},{"id":"customfield_10093","type":"FIELD"},{"id":"customfield_10091","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"}]},"content":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        #json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"customfield_10094","type":"FIELD"},{"id":"customfield_10092","type":"FIELD"},{"id":"customfield_10090","type":"FIELD"},{"id":"customfield_10093","type":"FIELD"},{"id":"customfield_10091","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"}]},"content":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"customfield_10101","type":"FIELD"},{"id":"customfield_10103","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"customfield_10104","type":"FIELD"},{"id":"customfield_10102","type":"FIELD"},{"id":"customfield_10100","type":"FIELD"},{"id":"customfield_10105","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
 
         try:
             for screen_tab_id in screen_tab_ids:
@@ -371,7 +346,6 @@ class JiraHandler:
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
-
 
     def get_technique_maturity(self):
 
