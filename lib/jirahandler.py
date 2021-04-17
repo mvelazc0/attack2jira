@@ -79,7 +79,7 @@ class JiraHandler:
                 custom_fields=[]
                 custom_field1_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "tactic",
+                    "name": "Tactic",
                     "description": "Attack Tactic",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
                 }
@@ -87,7 +87,7 @@ class JiraHandler:
 
                 custom_field2_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "maturity",
+                    "name": "Maturity",
                     "description": "Detection Maturity",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
                 }
@@ -95,7 +95,7 @@ class JiraHandler:
 
                 custom_field3_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher",
-                    "name": "url",
+                    "name": "Url",
                     "description": "Attack Technique Url",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:url"
                 }
@@ -103,7 +103,7 @@ class JiraHandler:
 
                 custom_field4_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "datasources",
+                    "name": "Datasources",
                     "description": "Data Sources",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:multiselect"
                 }
@@ -111,11 +111,19 @@ class JiraHandler:
 
                 custom_field5_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
-                    "name": "id",
+                    "name": "Id",
                     "description": "Technique Id",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
                 }
                 custom_fields.append(custom_field5_dict)
+
+                custom_field6_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
+                    "name": "Sub-Technique of",
+                    "description": "Parent Technique Id",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
+                }
+                custom_fields.append(custom_field6_dict)
 
                 for custom_field in custom_fields:
                     r = requests.post(self.url + '/rest/api/3/field', json=custom_field, headers=headers, auth=(self.username, self.apitoken), verify=False)
@@ -147,21 +155,21 @@ class JiraHandler:
 
             # maturity field options
             payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
-            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the maturity custom field.")
                 sys.exit()
 
             # tactic field options
             payload = self.get_attack_tactics()
-            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['tactic'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
+            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['Tactic'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the tactic custom field.")
                 sys.exit()
 
             # data source field options
             payload = self.get_attack_datasources()
-            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
+            r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['Datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the datasources custom field.")
                 sys.exit()
@@ -174,7 +182,7 @@ class JiraHandler:
     def get_custom_fields(self):
 
         #print("[*] Getting custom field ids ...")
-        custom_fields=['tactic','maturity','url','datasources','id']
+        custom_fields=['Tactic','Maturity','Url','Datasources','Id','Sub-Technique of']
         headers = {'Content-Type': 'application/json'}
         resp = dict()
 
@@ -197,32 +205,8 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
 
-    def remove_unwanted_fields(self):
-
-        print("[*] Removing unwanted fields from ATTACK's default screen tab ...")
-        unwanted_fields=['components','fixVersions','versions','reporter','environment','timetracking','timeoriginalestimate','duedate']
-        screen_tab_ids = self.get_screen_tabs()
-
-        headers = {'Content-Type': 'application/json'}
-        try:
-
-            for screen_tab_id in screen_tab_ids:
-                for unwanted_field in unwanted_fields:
-
-                    r = requests.delete(self.url + '/rest/api/2/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields/'+unwanted_field+'?undefined', headers=headers, auth=(self.username, self.apitoken), verify=False)
-                    if r.status_code == 204:
-                        print(r.status_code)
-
-                    else:
-                        print("[!] Error removing unwanted fields")
-                        sys.exit(1)
-
-        except Exception as ex:
-            traceback.print_exc(file=sys.stdout)
-            sys.exit(1)
-
-    def hide_unwanted_fields(self,key):
-
+    def hide_unwanted_fields_old(self,key):
+    # Deprecated, keeping in just in case.
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
         screen_tab_ids = self.get_screen_tabs(key)
         headers = {'Content-Type': 'application/json'}
@@ -240,6 +224,40 @@ class JiraHandler:
             print (ex)
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
+    
+    def hide_unwanted_fields(self,key):
+
+        #https://support.atlassian.com/jira-core-cloud/docs/configure-field-layout-in-the-issue-view/
+        #https://jira.atlassian.com/browse/JRACLOUD-74697?error=login_required&error_description=Login+required&state=0c1a9f1d-8614-4158-b02e-f06e8706f5d4
+
+
+        print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
+        #screen_tab_ids = self.get_screen_tabs(key)
+        project_id=self.get_project_id(key)
+        screen_tab_ids = self.get_project_screen_tab_ids(project_id)
+        custom_Fields = self.get_custom_fields()
+
+        headers = {'Content-Type': 'application/json'}
+
+        #json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"customfield_10094","type":"FIELD"},{"id":"customfield_10092","type":"FIELD"},{"id":"customfield_10090","type":"FIELD"},{"id":"customfield_10093","type":"FIELD"},{"id":"customfield_10091","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"}]},"content":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"MATURITY_CUSTOMFIELD","type":"FIELD"},{"id":"DATASOURCE_CUSTOMFIELD","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"TACTIC_CUSTOMFIELD","type":"FIELD"},{"id":"ID_CUSTOMFIELD","type":"FIELD"},{"id":"URL_CUSTOMFIELD","type":"FIELD"},{"id":"SUBTECHNIQUE_CUSTOMFIELD","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'        
+        
+        json_string = json_string.replace("DATASOURCE_CUSTOMFIELD", custom_Fields['Datasources'])
+        json_string = json_string.replace("ID_CUSTOMFIELD", custom_Fields['Id'])
+        json_string = json_string.replace("TACTIC_CUSTOMFIELD", custom_Fields['Tactic'])
+        json_string = json_string.replace("MATURITY_CUSTOMFIELD", custom_Fields['Maturity'])
+        json_string = json_string.replace("URL_CUSTOMFIELD", custom_Fields['Url'])
+        json_string = json_string.replace("SUBTECHNIQUE_CUSTOMFIELD", custom_Fields['Sub-Technique of'])
+
+        try:
+            for screen_tab_id in screen_tab_ids:
+                r = requests.put(self.url + '/rest/issuedetailslayout/config/classic/screen?projectIdOrKey='+key+'&screenId='+str(screen_tab_id[0]), data=json_string, headers=headers, auth=(self.username, self.apitoken), verify=False)
+            print("[!] Done.")
+
+        except Exception as ex:
+            print (ex)
+            traceback.print_exc(file=sys.stdout)
+            sys.exit(1)
 
 
     def do_custom_fields_exist(self):
@@ -247,7 +265,7 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
 
         ## TODO: Need to perform better checks but this works for now.
-        if len(custom_fields.keys()) == 5:
+        if len(custom_fields.keys()) == 6:
             return True
         else:
             return False
@@ -262,8 +280,10 @@ class JiraHandler:
 
             if r.status_code == 201:
                 print ("\t[!] Successfully created Jira issue for "+id)
+                return json.loads(r.text)
             else:
                 print ("\t[!] Error creating Jira issue for "+id)
+                print (r.text)
                 sys.exit()
 
         except Exception as ex:
@@ -297,6 +317,7 @@ class JiraHandler:
 
     def get_screen_tabs(self, key):
 
+        # deprecated, keeping it in codebase just in case.
         headers = {'Content-Type': 'application/json'}
         screen_ids = self.get_attack_screens(key)
         screen_tab_ids=[]
@@ -318,7 +339,8 @@ class JiraHandler:
             sys.exit()
 
 
-    def add_custom_field_to_screen_tab(self, key):
+    def add_custom_field_to_screen_tab_old(self, key):
+        # deprecated. keeping it in codebase just in case
 
         print("[*] Adding custom fields to ATTACK's default screen tab ...")
         headers = {'Content-Type': 'application/json'}
@@ -337,7 +359,6 @@ class JiraHandler:
         except Exception as ex:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
-
 
     def get_technique_maturity(self):
 
@@ -358,7 +379,7 @@ class JiraHandler:
                     technique_id = issue['fields'][custom_fields['id']]
                     #print (issue['fields']['summary']," ",issue['fields'][custom_fields['maturity']] )
                     #print(technique_id, " ", issue['fields'][custom_fields['maturity']])
-                    res_dict.update({technique_id:issue['fields'][custom_fields['maturity']]})
+                    res_dict.update({technique_id:issue['fields'][custom_fields['Maturity']]})
                 read_issues+=50
                 startAt+=50
                 if (read_issues>=r.json()['total']):
@@ -402,4 +423,77 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             print ("[!] Error connecting obtaining tactics from Att&ck's API !")
             sys.exit()
+
+    def add_custom_fields_to_screen(self, key):    
+
+        print("[*] Adding custom fields to ATTACK's default screen tab ...")
+        headers = {'Content-Type': 'application/json'}
+        project_id=self.get_project_id(key)
+        screen_tab_ids = self.get_project_screen_tab_ids(project_id)
+        custom_fields = self.get_custom_fields()
+
+        try:
+            for key in custom_fields.keys():
+                for screen_tab_id in screen_tab_ids:
+                    custom_field_dict = {'fieldId': custom_fields[key]}
+                    #print (self.url + '/rest/api/2/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields')
+                    r = requests.post(self.url + '/rest/api/3/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields', json = custom_field_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)
+
+            print("[!] Done!.")
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+
+    def get_project_id(self,key):
+        headers = {'Content-Type': 'application/json'}
+        try:
+            r = requests.get(self.url + '/rest/api/3/project/search', headers=headers, auth=(self.username, self.apitoken), verify=False)
+            resp_dict = r.json()
+            for project in resp_dict['values']:
+                if project['key'] == key:
+                    return project['id']
+            return 0
+                
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining project id!")
+            sys.exit()
+
+    
+    def get_project_screen_tab_ids(self, project_id):
+        headers = {'Content-Type': 'application/json'}
+        screen_tab_ids=[]
+        try:
+            r = requests.get(self.url +'/rest/api/3/issuetypescreenscheme/mapping?issueTypeScreenSchemeId='+project_id,headers=headers, auth=(self.username, self.apitoken), verify=False) 
+            resp_dict = r.json()
+            for screen in resp_dict['values']:
+                screen_tab_ids.append([screen['screenSchemeId'], self.get_screen_tab_id(screen['screenSchemeId'])])
+
+            return screen_tab_ids
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen/tab ids!")
+            sys.exit()
+    
+    def get_screen_tab_id(self, screen_id):
+        headers = {'Content-Type': 'application/json'}
+        try:
+            r = requests.get(self.url +'/rest/api/3/screens/'+screen_id+'/tabs', headers=headers, auth=(self.username, self.apitoken), verify=False) 
+            resp_dict = r.json()
+            return resp_dict[0]['id']
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen/tab ids!")
+            sys.exit()
+
+
+
+
+
+
+
+
 
