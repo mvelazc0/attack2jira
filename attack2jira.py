@@ -135,10 +135,10 @@ class Attack2Jira:
                             # "customfield_11050": "Value that we're putting into a Free Text Field."
                         }
                     }
-                    print("Creating Technique")
+                    #print("Creating Technique")
                     parent_id= jiraclient.create_issue(issue_dict, id)
-                    print (parent_id)
-                    print("Created Technique with id : "+ str(parent_id))
+                    #print (parent_id)
+                    #print("Created Technique with id : "+ str(parent_id))
 
                 else:
                 # Sub-technique
@@ -158,9 +158,9 @@ class Attack2Jira:
                             custom_fields['Sub-Technique of']: jiraclient.url +"/browse/"+parent_id['key'],
                         }
                     }
-                    print("Creating sub Technique under parent " + str(parent_id))
+                    #print("Creating sub Technique under parent " + str(parent_id))
                     ret_id= jiraclient.create_issue(issue_dict, id)
-                    print("Created sub Technique with id : "+ str(ret_id))
+                    #print("Created sub Technique with id : "+ str(ret_id))
 
             except Exception as ex:
                 print("\t[*] Could not create ticket for " + id)
@@ -234,7 +234,7 @@ class Attack2Jira:
         self.jirahandler.create_project(project, key)
         self.jirahandler.create_custom_fields()
         self.jirahandler.add_custom_field_options()
-        self.jirahandler.add_custom_field_to_screen_tab(key)
+        self.jirahandler.add_custom_fields_to_screen(key)
         self.jirahandler.hide_unwanted_fields(key)
         self.create_attack_techniques_and_subtechniques(key)
 

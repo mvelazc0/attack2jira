@@ -232,11 +232,22 @@ class JiraHandler:
 
 
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
-        screen_tab_ids = self.get_screen_tabs(key)
+        #screen_tab_ids = self.get_screen_tabs(key)
+        project_id=self.get_project_id(key)
+        screen_tab_ids = self.get_project_screen_tab_ids(project_id)
+        custom_Fields = self.get_custom_fields()
+
         headers = {'Content-Type': 'application/json'}
 
         #json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"customfield_10094","type":"FIELD"},{"id":"customfield_10092","type":"FIELD"},{"id":"customfield_10090","type":"FIELD"},{"id":"customfield_10093","type":"FIELD"},{"id":"customfield_10091","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"}]},"content":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
-        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"customfield_10101","type":"FIELD"},{"id":"customfield_10103","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"customfield_10104","type":"FIELD"},{"id":"customfield_10102","type":"FIELD"},{"id":"customfield_10100","type":"FIELD"},{"id":"customfield_10105","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"MATURITY_CUSTOMFIELD","type":"FIELD"},{"id":"DATASOURCE_CUSTOMFIELD","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"TACTIC_CUSTOMFIELD","type":"FIELD"},{"id":"ID_CUSTOMFIELD","type":"FIELD"},{"id":"URL_CUSTOMFIELD","type":"FIELD"},{"id":"SUBTECHNIQUE_CUSTOMFIELD","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'        
+        
+        json_string = json_string.replace("DATASOURCE_CUSTOMFIELD", custom_Fields['Datasources'])
+        json_string = json_string.replace("ID_CUSTOMFIELD", custom_Fields['Id'])
+        json_string = json_string.replace("TACTIC_CUSTOMFIELD", custom_Fields['Tactic'])
+        json_string = json_string.replace("MATURITY_CUSTOMFIELD", custom_Fields['Maturity'])
+        json_string = json_string.replace("URL_CUSTOMFIELD", custom_Fields['Url'])
+        json_string = json_string.replace("SUBTECHNIQUE_CUSTOMFIELD", custom_Fields['Sub-Technique of'])
 
         try:
             for screen_tab_id in screen_tab_ids:
@@ -306,6 +317,7 @@ class JiraHandler:
 
     def get_screen_tabs(self, key):
 
+        # deprecated, keeping it in codebase just in case.
         headers = {'Content-Type': 'application/json'}
         screen_ids = self.get_attack_screens(key)
         screen_tab_ids=[]
@@ -327,7 +339,8 @@ class JiraHandler:
             sys.exit()
 
 
-    def add_custom_field_to_screen_tab(self, key):
+    def add_custom_field_to_screen_tab_old(self, key):
+        # deprecated. keeping it in codebase just in case
 
         print("[*] Adding custom fields to ATTACK's default screen tab ...")
         headers = {'Content-Type': 'application/json'}
@@ -410,4 +423,77 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             print ("[!] Error connecting obtaining tactics from Att&ck's API !")
             sys.exit()
+
+    def add_custom_fields_to_screen(self, key):    
+
+        print("[*] Adding custom fields to ATTACK's default screen tab ...")
+        headers = {'Content-Type': 'application/json'}
+        project_id=self.get_project_id(key)
+        screen_tab_ids = self.get_project_screen_tab_ids(project_id)
+        custom_fields = self.get_custom_fields()
+
+        try:
+            for key in custom_fields.keys():
+                for screen_tab_id in screen_tab_ids:
+                    custom_field_dict = {'fieldId': custom_fields[key]}
+                    #print (self.url + '/rest/api/2/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields')
+                    r = requests.post(self.url + '/rest/api/3/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields', json = custom_field_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)
+
+            print("[!] Done!.")
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+
+    def get_project_id(self,key):
+        headers = {'Content-Type': 'application/json'}
+        try:
+            r = requests.get(self.url + '/rest/api/3/project/search', headers=headers, auth=(self.username, self.apitoken), verify=False)
+            resp_dict = r.json()
+            for project in resp_dict['values']:
+                if project['key'] == key:
+                    return project['id']
+            return 0
+                
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining project id!")
+            sys.exit()
+
+    
+    def get_project_screen_tab_ids(self, project_id):
+        headers = {'Content-Type': 'application/json'}
+        screen_tab_ids=[]
+        try:
+            r = requests.get(self.url +'/rest/api/3/issuetypescreenscheme/mapping?issueTypeScreenSchemeId='+project_id,headers=headers, auth=(self.username, self.apitoken), verify=False) 
+            resp_dict = r.json()
+            for screen in resp_dict['values']:
+                screen_tab_ids.append([screen['screenSchemeId'], self.get_screen_tab_id(screen['screenSchemeId'])])
+
+            return screen_tab_ids
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen/tab ids!")
+            sys.exit()
+    
+    def get_screen_tab_id(self, screen_id):
+        headers = {'Content-Type': 'application/json'}
+        try:
+            r = requests.get(self.url +'/rest/api/3/screens/'+screen_id+'/tabs', headers=headers, auth=(self.username, self.apitoken), verify=False) 
+            resp_dict = r.json()
+            return resp_dict[0]['id']
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen/tab ids!")
+            sys.exit()
+
+
+
+
+
+
+
+
 
