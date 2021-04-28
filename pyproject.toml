@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "attack2jira"
 version = "0.1.0"
-description = "attack2jira automates the process of standing up a Jira environment that can be used to track and measure ATT&CK coverage"
+description = "Attack2jira automates the process of standing up a Jira environment that can be used to track and measure ATT&CK coverage"
 authors = ["Mauricio Velazco"]
 license = "BSD 3-Clause License"
 

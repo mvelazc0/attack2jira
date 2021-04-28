@@ -2,7 +2,7 @@ import sys
 import traceback
 import requests
 import urllib3
-
+from http import HTTPStatus
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from typing import NamedTuple
 from yarl import URL
@@ -30,7 +30,7 @@ class BoardHandler(NamedTuple):
             verify=False,
         )
 
-        if r.status_code == 200:
+        if r.status_code == HTTPStatus.OK:
             print("[!] Success! Looks like there is an existing kanban board")
             return True
 
@@ -59,7 +59,7 @@ class BoardHandler(NamedTuple):
             auth=(self.username, self.apitoken),
             verify=False,
         )
-        if r.status_code == 201:
+        if r.status_code == HTTPStatus.OK:
             print("[!] Success!")
 
         elif r.status_code == 401:
