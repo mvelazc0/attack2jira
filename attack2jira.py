@@ -158,9 +158,7 @@ class Attack2Jira:
                             custom_fields['Sub-Technique of']: jiraclient.url +"/browse/"+parent_id['key'],
                         }
                     }
-                    #print("Creating sub Technique under parent " + str(parent_id))
                     ret_id= jiraclient.create_issue(issue_dict, id)
-                    #print("Created sub Technique with id : "+ str(ret_id))
 
             except Exception as ex:
                 print("\t[*] Could not create ticket for " + id)
