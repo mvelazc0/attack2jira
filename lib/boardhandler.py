@@ -2,14 +2,16 @@ import sys
 import traceback
 import requests
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from typing import NamedTuple
 from yarl import URL
 
+
 class BoardHandler(NamedTuple):
     """ Kanban Board Class for Attack2Jira"""
 
-    url:  URL
+    url: URL
     username: str
     apitoken: str
 

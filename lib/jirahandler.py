@@ -5,10 +5,11 @@ import urllib3
 from http import HTTPStatus
 from typing import NamedTuple
 from yarl import URL
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class JiraHandler():
+class JiraHandler:
 
     url = URL
     username = str
@@ -142,7 +143,9 @@ class JiraHandler():
                     )
 
                     if r.status_code == HTTPStatus.OK:
-                        print(f"[!] Successfully created /{custom_field['name']}/ custom field.")
+                        print(
+                            f"[!] Successfully created /{custom_field['name']}/ custom field."
+                        )
 
                     elif r.status_code == 401:
                         print("[!] Unauthorized. Probably not enough permissions :(")
@@ -247,7 +250,6 @@ class JiraHandler():
         except Exception as ex:
             traceback.print_exc(file=sys.stderr)
 
-
     def hide_unwanted_fields(self, key):
 
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
@@ -258,7 +260,7 @@ class JiraHandler():
 
         headers = {"Content-Type": "application/json"}
 
-        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"MATURITY_CUSTOMFIELD","type":"FIELD"},{"id":"DATASOURCE_CUSTOMFIELD","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"TACTIC_CUSTOMFIELD","type":"FIELD"},{"id":"ID_CUSTOMFIELD","type":"FIELD"},{"id":"URL_CUSTOMFIELD","type":"FIELD"},{"id":"SUBTECHNIQUE_CUSTOMFIELD","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
+        json_string = '{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"MATURITY_CUSTOMFIELD","type":"FIELD"},{"id":"DATASOURCE_CUSTOMFIELD","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"TACTIC_CUSTOMFIELD","type":"FIELD"},{"id":"ID_CUSTOMFIELD","type":"FIELD"},{"id":"URL_CUSTOMFIELD","type":"FIELD"},{"id":"SUBTECHNIQUE_CUSTOMFIELD","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
 
         json_string = json_string.replace(
             "DATASOURCE_CUSTOMFIELD", custom_Fields["Datasources"]
