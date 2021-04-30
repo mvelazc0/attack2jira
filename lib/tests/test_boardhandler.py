@@ -1,6 +1,7 @@
 from unittest import main, TestCase
 from lib.boardhandler import BoardHandler
 import urllib3
+import os
 from http import HTTPStatus
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -9,7 +10,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class TestBoardHandler(TestCase):
     """ Testing the BoardHandler Class"""
 
-    boardhandler = None
+    BoardHandler = None
 
     def test_check_board(self):
         """Test if check_board works"""
@@ -30,14 +31,17 @@ class TestBoardHandler(TestCase):
         filter_id = "dogs"
         project_key = "cats"
 
-        self.assertEqual(boardhandler.create_board(board, filter_id, project_key), None)
+        self.assertEqual(
+            boardhandler.create_board(board, filter_id, project_key),
+            HTTPStatus.BAD_REQUEST,
+        )
 
 
 if __name__ == "__main__":
 
-    url = "https://gocardless.atlassian.net"
-    username = ""
-    password = ""
+    url = os.environ["DOMAIN"]
+    username = os.environ["USER"]
+    password = os.environ["API_TOKEN"]
 
     boardhandler = BoardHandler(url, username, password)
 
