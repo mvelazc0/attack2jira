@@ -1,44 +1,73 @@
-from unittest import main, TestCase
-from lib.boardhandler import BoardHandler
+import sys
+import traceback
+import requests
 import urllib3
+from typing import NamedTuple
+from yarl import URL
 from http import HTTPStatus
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class TestBoardHandler(TestCase):
-    """ Testing the BoardHandler Class"""
+class BoardHandler(NamedTuple):
+    """ Kanban Board Class for Attack2Jira"""
 
-    boardhandler = None
+    url: URL
+    username: str
+    apitoken: str
 
-    def test_check_board(self):
-        """Test if check_board works"""
+    def check_board(self, board_id):
+        # TODO: pass the id created from create_board() if there isn't a board created for future checks
+        """Checks if Kanban Board Exists"""
 
-        no_board_id = 0
-        # existing_board_id = ''
+        print("[*] Checking if there is an Att&ck board... ")
 
-        # there shouldn't be a board with ID:
-        self.assertEqual(boardhandler.check_board(no_board_id), False)
+        headers = {"Content-Type": "application/json"}
 
-        # there should be a board with ''
-        # self.assertEqual(boardhandler.check_board(existing_board_id), HTTPStatus.OK)
+        r = requests.get(
+            f"{self.url}/rest/agile/1.0/board/{board_id}",
+            headers=headers,
+            auth=(self.username, self.apitoken),
+            verify=False,
+        )
 
-    def test_create_board(self):
-        """ Test if it attempts to create a board"""
+        if r.status_code == HTTPStatus.OK:
+            print("[!] Success! Looks like there is an existing kanban board")
+            return True
 
-        board = "bees"
-        filter_id = "dogs"
-        project_key = "cats"
+        else:
+            print("[!] No board detected ")
+            return False
 
-        self.assertEqual(boardhandler.create_board(board, filter_id, project_key), None)
+    def create_board(self, board, filter_id, project_key):
+        """Creates Kanban Board under Project: Security"""
 
+        print("[*] Creating the Att&ck board...")
+        headers = {"Content-Type": "application/json"}
 
-if __name__ == "__main__":
+        project_dict = {
+            "name": board,
+            "type": "kanban",
+            "filterId": filter_id,
+            "location": {"type": "project", "projectKeyOrId": project_key},
+        }
 
-    url = "https://gocardless.atlassian.net"
-    username = ""
-    password = ""
+        r = requests.post(
+            f"{self.url}/rest/agile/1.0/board",
+            json=project_dict,
+            headers=headers,
+            auth=(self.username, self.apitoken),
+            verify=False,
+        )
+        if r.status_code == HTTPStatus.CREATED:
+            print("[!] Success!")
+            return HTTPStatus.OK
 
-    boardhandler = BoardHandler(url, username, password)
+        elif r.status_code == HTTPStatus.UNAUTHORIZED:
+            print("[!] Unauthorized. Probably not enough permissions :(")
+            return HTTPStatus.UNAUTHORIZED
 
-    main()
+        else:
+            print("[!] Error creating Jira board: ")
+            traceback.print_exc(file=sys.stderr)
+            return HTTPStatus.BAD_REQUEST
