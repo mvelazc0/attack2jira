@@ -2,20 +2,18 @@ from attackcti import attack_client
 import json, sys, argparse, traceback
 from getpass import getpass
 from lib.jirahandler import JiraHandler
+from lib.boardhandler import BoardHandler
+from http import HTTPStatus
 from argparse import RawTextHelpFormatter
 
 
 class Attack2Jira:
-
-    jirahandler = None
-
     def __init__(self, url, username, password):
 
-        jirahandler = JiraHandler(url, username, password)
-        self.jirahandler = jirahandler
+        self.jirahandler = JiraHandler(url, username, password)
+        self.boardhandler = BoardHandler(url, username, password)
 
     def get_attack_techniques(self):
-        # Deprecated, keeping just in case
 
         try:
             print("[*] Obtaining ATT&CK's techniques...")
@@ -31,68 +29,12 @@ class Attack2Jira:
             return techniques
 
         except:
-            traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stderr)
             print("[!] Error connecting to Att&ck's API !")
             return
 
-    def create_attack_techniques(self, key):
-
-        techniques = self.get_attack_techniques()
-        jiraclient = self.jirahandler
-
-        print("[*] Creating Jira issues for ATT&CK's techniques...")
-        for technique in techniques:
-            try:
-
-                custom_fields = self.jirahandler.get_custom_fields()
-
-                name = technique["name"]
-                id = technique["external_references"][0]["external_id"]
-                url = technique["external_references"][0]["url"]
-                tactic = technique["kill_chain_phases"][0]["phase_name"]
-                description = technique["description"]
-
-                # some techniques dont have the field populated
-                if "x_mitre_data_sources" in technique.keys():
-                    datasources = technique["x_mitre_data_sources"]
-                else:
-                    datasources = []
-
-                ds_payload = []
-                for ds in datasources:
-                    ds_payload.append({"value": ds.title()})
-
-                issue_dict = {
-                    "fields": {
-                        "project": {"key": key},
-                        "summary": name + " (" + id + ")",
-                        # "summary": name,
-                        "description": description,
-                        "issuetype": {"name": "Task"},
-                        custom_fields["id"]: id,
-                        custom_fields["tactic"]: {"value": tactic},
-                        custom_fields["maturity"]: {"value": "Not Tracked"},
-                        custom_fields["url"]: url,
-                        custom_fields["datasources"]: ds_payload,
-                        # "customfield_11050": "Value that we're putting into a Free Text Field."
-                    }
-                }
-                jiraclient.create_issue(issue_dict, id)
-
-            except Exception as ex:
-                print("\t[*] Could not create ticket for " + id)
-                print(ex)
-                traceback.print_exc(file=sys.stdout)
-                pass
-                # print(ex)
-                # sys.exit()
-
-        print("[*] Done!")
-
     def create_attack_techniques_and_subtechniques(self, key):
-
-        # this creates each sub-technique as a SubTask
-        # no issue links are created
+        """this creates each sub-technique as a SubTask. No issue links are created"""
 
         jiraclient = self.jirahandler
         techniques = self.get_attack_techniques()
@@ -113,12 +55,14 @@ class Attack2Jira:
                 description = technique["description"]
 
                 # some techniques dont have the field populated
-                if "x_mitre_data_sources" in technique.keys():
-                    datasources = technique["x_mitre_data_sources"]
-                else:
-                    datasources = []
+                datasources = (
+                    technique["x_mitre_data_sources"]
+                    if "x_mitre_data_sources" in technique.keys()
+                    else []
+                )
 
                 ds_payload = []
+
                 for ds in datasources:
                     ds_payload.append({"value": ds.title()})
 
@@ -127,7 +71,6 @@ class Attack2Jira:
                     issue_dict = {
                         "fields": {
                             "project": {"key": key},
-                            # "summary":  name + " (" + id + ")",
                             "summary": name,
                             "description": description,
                             "issuetype": {"name": "Task"},
@@ -139,18 +82,20 @@ class Attack2Jira:
                             # "customfield_11050": "Value that we're putting into a Free Text Field."
                         }
                     }
-                    # print("Creating Technique")
-                    parent_id = jiraclient.create_issue(issue_dict, id)
-                    # print (parent_id)
-                    # print("Created Technique with id : "+ str(parent_id))
+                    if self.jirahandler.check_issues_exist(issue_dict):
+                        parent_dict = jiraclient.create_issue(issue_dict, id)
+                        sub_technique_creation = True
+                    else:
+                        print(f"[x] Looks like there is a ticket already for: {name}")
+                        parent_dict = ()
+                        sub_technique_creation = False
 
-                else:
+                elif sub_technique_creation:
                     # Sub-technique
                     issue_dict = {
                         "fields": {
-                            "parent": {"id": parent_id["id"]},
+                            "parent": {"id": parent_dict["id"]},
                             "project": {"key": key},
-                            # "summary":  name + " (" + id + ")",
                             "summary": name,
                             "description": description,
                             "issuetype": {"name": "Sub-task"},
@@ -159,20 +104,18 @@ class Attack2Jira:
                             custom_fields["Maturity"]: {"value": "Not Tracked"},
                             custom_fields["Url"]: url,
                             custom_fields["Datasources"]: ds_payload,
-                            custom_fields["Sub-Technique of"]: jiraclient.url
-                            + "/browse/"
-                            + parent_id["key"],
+                            custom_fields[
+                                "Sub-Technique of"
+                            ]: f"{jiraclient.url}/browse/{parent_dict['key']}",
                         }
                     }
                     ret_id = jiraclient.create_issue(issue_dict, id)
+                    print(f"\t + Created sub Technique with id : {str(ret_id)}")
 
             except Exception as ex:
-                print("\t[*] Could not create ticket for " + id)
+                print(f"\t[*] Could not create ticket for {id}")
                 print(ex)
-                traceback.print_exc(file=sys.stdout)
-                pass
-                # print(ex)
-                # sys.exit()
+                traceback.print_exc(file=sys.stderr)
 
         print("[*] Done!")
 
@@ -205,7 +148,7 @@ class Attack2Jira:
         res_dict = self.jirahandler.get_technique_maturity()
         for key in res_dict.keys():
             enabled = True
-            # print (key +" "+ res_dict[key]['value'])
+
             if res_dict[key]["value"] == "Not Tracked":
                 enabled = False
                 color = not_tracked_color
@@ -225,9 +168,29 @@ class Attack2Jira:
         with open("attack2jira.json", "w", encoding="utf-8") as f:
             json.dump(layer_json, f, ensure_ascii=False, indent=4)
 
-    def set_up_jira_automated(self, project, key):
-
+    def set_up_jira_project_automated(self, project, key):
+        """ Set up Jira Project"""
         self.jirahandler.create_project(project, key)
+
+    def set_up_jira_board_automated(self, key):
+        """ Set up Jira Kanban Board"""
+        try:
+            filter_id = input("Filter_ID for board: ")
+            key = input(f"Enter project KEY or leave blank (default is {key}): ") or key
+            board_id = str(input("Enter board ID (press E if board not created): ") or None)
+        except Exception as ex:
+            traceback.print_exc(file=sys.stderr)
+            print(ex)
+
+        if not self.boardhandler.check_board(board_id):
+            board_name = input(
+                "Please enter the name of the board you wish to create: "
+            )
+            self.boardhandler.create_board(board_name, filter_id, key)
+
+    def set_up_jira_automated(self, key):
+        """ Set up Attack2Mitre """
+
         self.jirahandler.create_custom_fields()
         self.jirahandler.add_custom_field_options()
         self.jirahandler.add_custom_fields_to_screen(key)
@@ -260,8 +223,8 @@ def main():
         "-k",
         dest="key",
         type=str,
-        help="Project Key.(default='ATTACK')",
-        default="ATTACK",
+        help="Project Key.(default='ATT')",
+        default="ATT",
     )
     parser.add_argument(
         "-hide",
@@ -270,6 +233,7 @@ def main():
     )
     results = parser.parse_args()
 
+    # arguments
     url = results.url
     user = results.user
     action = results.action
@@ -278,15 +242,24 @@ def main():
     key = results.key
 
     if url and user and action:
-        pswd = getpass("Jira API Token for " + user + ":")
+        pswd = getpass(f"Jira API Token for {user}:")
+        attack2jira = Attack2Jira(url, user, pswd)
 
-        if action == "initialize":
-            attack2jira = Attack2Jira(url, user, pswd)
-            attack2jira.set_up_jira_automated(project, key)
+        if action == "project":
+            """ Initialise Attack2Mitre with project"""
+            attack2jira.set_up_jira_project_automated(project, key)
 
-        if action == "export":
-            attack2jira = Attack2Jira(url, user, pswd)
+        elif action == "board":
+            """ Initialise Attack2Mitre with kanban board"""
+            attack2jira.set_up_jira_board_automated(key)
+
+        elif action == "export":
+            """ Export Json Layer for ATT&ACK Navigator"""
             attack2jira.generate_json_layer(hideDisabled)
+
+        # finish set up
+        attack2jira.set_up_jira_automated(key)
+
     else:
         parser.print_help()
 
