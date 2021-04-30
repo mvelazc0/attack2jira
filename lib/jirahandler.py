@@ -3,7 +3,6 @@ import requests
 import sys, traceback, json
 import urllib3
 from http import HTTPStatus
-from typing import NamedTuple
 from yarl import URL
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -38,7 +37,7 @@ class JiraHandler:
                 self.url = url
                 print("[!] Success!")
 
-            elif r.status_code == 401:
+            elif r.status_code == HTTPStatus.UNAUTHORIZED:
                 print("[!] Wrong username or password :( .")
                 sys.exit()
 
@@ -63,10 +62,10 @@ class JiraHandler:
                 auth=(self.username, self.apitoken),
                 verify=False,
             )
-            if r.status_code == HTTPStatus.OK:
+            if r.status_code == HTTPStatus.CREATED:
                 print("[!] Success!")
 
-            elif r.status_code == 401:
+            elif r.status_code == HTTPStatus.UNAUTHORIZED:
                 print("[!] Unauthorized. Probably not enough permissions :(")
 
             else:
@@ -142,12 +141,12 @@ class JiraHandler:
                         verify=False,
                     )
 
-                    if r.status_code == HTTPStatus.OK:
+                    if r.status_code == HTTPStatus.CREATED:
                         print(
                             f"[!] Successfully created /{custom_field['name']}/ custom field."
                         )
 
-                    elif r.status_code == 401:
+                    elif r.status_code == HTTPStatus.UNAUTHORIZED:
                         print("[!] Unauthorized. Probably not enough permissions :(")
 
                     else:
@@ -181,7 +180,7 @@ class JiraHandler:
                 auth=(self.username, self.apitoken),
                 verify=False,
             )
-            if r.status_code != HTTPStatus.OK:
+            if r.status_code != HTTPStatus.NO_CONTENT:
                 print("[!] Error creating options for the maturity custom field.")
                 sys.exit()
 
@@ -194,7 +193,7 @@ class JiraHandler:
                 auth=(self.username, self.apitoken),
                 verify=False,
             )
-            if r.status_code != HTTPStatus.OK:
+            if r.status_code != HTTPStatus.NO_CONTENT:
                 print("[!] Error creating options for the tactic custom field.")
                 sys.exit()
 
@@ -207,7 +206,7 @@ class JiraHandler:
                 auth=(self.username, self.apitoken),
                 verify=False,
             )
-            if r.status_code != HTTPStatus.OK:
+            if r.status_code != HTTPStatus.NO_CONTENT:
                 print("[!] Error creating options for the datasources custom field.")
                 sys.exit()
 
@@ -217,7 +216,6 @@ class JiraHandler:
 
     def get_custom_fields(self):
 
-        # print("[*] Getting custom field ids ...")
         custom_fields = [
             "Tactic",
             "Maturity",
@@ -253,7 +251,6 @@ class JiraHandler:
     def hide_unwanted_fields(self, key):
 
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
-        # screen_tab_ids = self.get_screen_tabs(key)
         project_id = self.get_project_id(key)
         screen_tab_ids = self.get_project_screen_tab_ids(project_id)
         custom_Fields = self.get_custom_fields()
@@ -312,7 +309,7 @@ class JiraHandler:
                 verify=False,
             )
 
-            if r.status_code == HTTPStatus.OK:
+            if r.status_code == HTTPStatus.CREATED:
                 print(f"\t[!] Successfully created Jira issue for {id}")
                 return json.loads(r.text)
             else:
@@ -321,7 +318,6 @@ class JiraHandler:
                 sys.exit()
 
         except Exception as ex:
-
             print(ex)
             traceback.print_exc(file=sys.stderr)
             sys.exit()
@@ -352,28 +348,39 @@ class JiraHandler:
             traceback.print_exc(file=sys.stderr)
             sys.exit()
 
-    def get_screen_tabs(self, key):
 
-        # deprecated, keeping it in codebase just in case.
+    def check_issues_exist(self, issue_dict):
+        """Get issues from project"""
+
         headers = {"Content-Type": "application/json"}
-        screen_ids = self.get_attack_screens(key)
-        screen_tab_ids = []
+        read_issues = 0
+        startAt = 0
+        res_dict = dict()
+
         try:
-            for screen_id in screen_ids:
+
+            while True:
 
                 r = requests.get(
-                    f"{self.url}/rest/api/3/screens/{str(screen_id)}/tabs",
+                    f"{self.url}/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt={str(startAt)}",
                     headers=headers,
                     auth=(self.username, self.apitoken),
                     verify=False,
                 )
-                if r.status_code == HTTPStatus.OK:
-                    for result in r.json():
-                        screen_tab_ids.append([screen_id, result["id"]])
-                else:
-                    print("[!] Error obtaining screen tabs")
+                resp_dict = r.json()
+                for issue in resp_dict["issues"]:
+                    if issue in issue_dict.values():
+                        print(f"{issue} already exists ... ")
+                        return True
+                    else:
+                        return False
 
-            return screen_tab_ids
+                read_issues += 50
+                startAt += 50
+                if read_issues >= r.json()["total"]:
+                    break
+
+            return res_dict
 
         except Exception as ex:
             traceback.print_exc(file=sys.stderr)
