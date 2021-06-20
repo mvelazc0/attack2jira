@@ -87,43 +87,91 @@ class JiraHandler:
 
                 custom_field2_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
-                    "name": "Maturity",
-                    "description": "Detection Maturity",
+                    "name": "CTI",
+                    "description": "CTI ATT&CK Map",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
                 }
                 custom_fields.append(custom_field2_dict)
-
+                
                 custom_field3_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "Detection",
+                    "description": "Detection ATT&CK Map",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+                }
+                custom_fields.append(custom_field3_dict)
+                
+                custom_field4_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "Hunt",
+                    "description": "Hunt ATT&CK Map",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+                }
+                custom_fields.append(custom_field4_dict)
+                
+                custom_field5_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "Maturity",
+                    "description": "Maturity ATT&CK Map",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+                }
+                custom_fields.append(custom_field5_dict)
+                
+                custom_field6_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "NIST",
+                    "description": "NIST ATT&CK Map",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+                }
+                custom_fields.append(custom_field6_dict)
+                
+                custom_field7_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "Purple",
+                    "description": "Purple ATT&CK Map",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+                }
+                custom_fields.append(custom_field7_dict)
+                
+                custom_field8_dict = {
+                    "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+                    "name": "Red",
+                    "description": "Red ATT&CK Map",
+                    "type": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+                }
+                custom_fields.append(custom_field8_dict)
+
+                custom_field9_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher",
                     "name": "Url",
                     "description": "Attack Technique Url",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:url"
                 }
-                custom_fields.append(custom_field3_dict)
+                custom_fields.append(custom_field9_dict)
 
-                custom_field4_dict = {
+                custom_field10_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
                     "name": "Datasources",
                     "description": "Data Sources",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:multiselect"
                 }
-                custom_fields.append(custom_field4_dict)
+                custom_fields.append(custom_field10_dict)
 
-                custom_field5_dict = {
+                custom_field11_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
                     "name": "Id",
                     "description": "Technique Id",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
                 }
-                custom_fields.append(custom_field5_dict)
+                custom_fields.append(custom_field11_dict)
 
-                custom_field6_dict = {
+                custom_field12_dict = {
                     "searcherKey": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
                     "name": "Sub-Technique of",
                     "description": "Parent Technique Id",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
                 }
-                custom_fields.append(custom_field6_dict)
+                custom_fields.append(custom_field12_dict)
 
                 for custom_field in custom_fields:
                     r = requests.post(self.url + '/rest/api/3/field', json=custom_field, headers=headers, auth=(self.username, self.apitoken), verify=False)
@@ -153,11 +201,53 @@ class JiraHandler:
         headers = {'Content-Type': 'application/json'}
         try:
 
+            # cti field options
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['CTI'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the CTI custom field.")
+                sys.exit()
+    
+            # detection field options
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Detection'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the Detection custom field.")
+                sys.exit()
+
+           # hunt field options
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Hunt'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the Hunt custom field.")
+                sys.exit()
+
             # maturity field options
             payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
             r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
-                print("[!] Error creating options for the maturity custom field.")
+                print("[!] Error creating options for the Maturity custom field.")
+                sys.exit()
+
+            # nist field options
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['NIST'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the NIST custom field.")
+                sys.exit()
+
+            # purple field options
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Purple'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the Purple custom field.")
+                sys.exit()
+  
+            # red field options
+            payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
+            r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Red'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
+            if r.status_code != 204:
+                print("[!] Error creating options for the Red custom field.")
                 sys.exit()
 
             # tactic field options
@@ -182,7 +272,7 @@ class JiraHandler:
     def get_custom_fields(self):
 
         #print("[*] Getting custom field ids ...")
-        custom_fields=['Tactic','Maturity','Url','Datasources','Id','Sub-Technique of']
+        custom_fields=['Tactic','CTI','Detection','Hunt','Maturity','NIST','Purple','Red','Url','Datasources','Id','Sub-Technique of']
         headers = {'Content-Type': 'application/json'}
         resp = dict()
 
@@ -240,12 +330,18 @@ class JiraHandler:
         headers = {'Content-Type': 'application/json'}
 
         #json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"},{"id":"customfield_10094","type":"FIELD"},{"id":"customfield_10092","type":"FIELD"},{"id":"customfield_10090","type":"FIELD"},{"id":"customfield_10093","type":"FIELD"},{"id":"customfield_10091","type":"FIELD"},{"id":"labels","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"}]},"content":{"visible":[{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'
-        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"MATURITY_CUSTOMFIELD","type":"FIELD"},{"id":"DATASOURCE_CUSTOMFIELD","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"TACTIC_CUSTOMFIELD","type":"FIELD"},{"id":"ID_CUSTOMFIELD","type":"FIELD"},{"id":"URL_CUSTOMFIELD","type":"FIELD"},{"id":"SUBTECHNIQUE_CUSTOMFIELD","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'        
+        json_string = u'{"context":{"primary":[{"id":"assignee","type":"FIELD"},{"id":"reporter","type":"FIELD"},{"id":"labels","type":"FIELD"},{"id":"CTI_CUSTOMFIELD","type":"FIELD"},{"id":"DETECTION_CUSTOMFIELD","type":"FIELD"},{"id":"HUNT_CUSTOMFIELD","type":"FIELD"},{"id":"MATURITY_CUSTOMFIELD","type":"FIELD"},{"id":"NIST_CUSTOMFIELD","type":"FIELD"},{"id":"PURPLE_CUSTOMFIELD","type":"FIELD"},{"id":"RED_CUSTOMFIELD","type":"FIELD"},{"id":"DATASOURCE_CUSTOMFIELD","type":"FIELD"}],"secondary":[{"id":"priority","type":"FIELD"}],"alwaysHidden":[{"id":"timeoriginalestimate","type":"FIELD"},{"id":"timetracking","type":"FIELD"},{"id":"components","type":"FIELD"},{"id":"fixVersions","type":"FIELD"},{"id":"customfield_10014","type":"FIELD"},{"id":"duedate","type":"FIELD"},{"id":"customfield_10011","type":"FIELD"},{"id":"customfield_10026","type":"FIELD"},{"id":"devSummary","type":"DEV_SUMMARY"}]},"content":{"visible":[{"id":"TACTIC_CUSTOMFIELD","type":"FIELD"},{"id":"ID_CUSTOMFIELD","type":"FIELD"},{"id":"URL_CUSTOMFIELD","type":"FIELD"},{"id":"SUBTECHNIQUE_CUSTOMFIELD","type":"FIELD"},{"id":"description","type":"FIELD"}],"alwaysHidden":[]}}'        
         
         json_string = json_string.replace("DATASOURCE_CUSTOMFIELD", custom_Fields['Datasources'])
         json_string = json_string.replace("ID_CUSTOMFIELD", custom_Fields['Id'])
         json_string = json_string.replace("TACTIC_CUSTOMFIELD", custom_Fields['Tactic'])
+        json_string = json_string.replace("CTI_CUSTOMFIELD", custom_Fields['CTI'])
+        json_string = json_string.replace("DETECTION_CUSTOMFIELD", custom_Fields['Detection'])
+        json_string = json_string.replace("HUNT_CUSTOMFIELD", custom_Fields['Hunt'])
         json_string = json_string.replace("MATURITY_CUSTOMFIELD", custom_Fields['Maturity'])
+        json_string = json_string.replace("NIST_CUSTOMFIELD", custom_Fields['NIST'])
+        json_string = json_string.replace("PURPLE_CUSTOMFIELD", custom_Fields['Purple'])
+        json_string = json_string.replace("RED_CUSTOMFIELD", custom_Fields['Red'])
         json_string = json_string.replace("URL_CUSTOMFIELD", custom_Fields['Url'])
         json_string = json_string.replace("SUBTECHNIQUE_CUSTOMFIELD", custom_Fields['Sub-Technique of'])
 
@@ -265,7 +361,7 @@ class JiraHandler:
         custom_fields = self.get_custom_fields()
 
         ## TODO: Need to perform better checks but this works for now.
-        if len(custom_fields.keys()) == 6:
+        if len(custom_fields.keys()) == 12:
             return True
         else:
             return False
@@ -360,6 +456,102 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
 
+    def get_technique_cti(self):
+
+        print("[*] Getting issues from the ATTACK project...")
+        custom_fields = self.get_custom_fields()
+        headers = {'Content-Type': 'application/json'}
+        read_issues=0
+        startAt=0
+        res_dict=dict()
+
+        try:
+
+            while(True):
+                #print("Entering while loop. startAt is "+str(startAt))
+                r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
+                resp_dict = r.json()
+                for issue in resp_dict['issues']:
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['CTI']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['CTI']])
+                    res_dict.update({technique_id:issue['fields'][custom_fields['CTI']]})                   
+                read_issues+=50
+                startAt+=50
+                if (read_issues>=r.json()['total']):
+                    break
+
+            return res_dict
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+
+            
+    def get_technique_detection(self):
+
+        print("[*] Getting issues from the ATTACK project...")
+        custom_fields = self.get_custom_fields()
+        headers = {'Content-Type': 'application/json'}
+        read_issues=0
+        startAt=0
+        res_dict=dict()
+
+        try:
+
+            while(True):
+                #print("Entering while loop. startAt is "+str(startAt))
+                r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
+                resp_dict = r.json()
+                for issue in resp_dict['issues']:
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['Detection']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['Detection']])
+                    res_dict.update({technique_id:issue['fields'][custom_fields['Detection']]})
+                read_issues+=50
+                startAt+=50
+                if (read_issues>=r.json()['total']):
+                    break
+
+            return res_dict
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+
+            
+    def get_technique_hunt(self):
+
+        print("[*] Getting issues from the ATTACK project...")
+        custom_fields = self.get_custom_fields()
+        headers = {'Content-Type': 'application/json'}
+        read_issues=0
+        startAt=0
+        res_dict=dict()
+
+        try:
+
+            while(True):
+                #print("Entering while loop. startAt is "+str(startAt))
+                r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
+                resp_dict = r.json()
+                for issue in resp_dict['issues']:
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['Hunt']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['Hunt']])
+                    res_dict.update({technique_id:issue['fields'][custom_fields['Hunt']]})
+                read_issues+=50
+                startAt+=50
+                if (read_issues>=r.json()['total']):
+                    break
+
+            return res_dict
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+            
+            
     def get_technique_maturity(self):
 
         print("[*] Getting issues from the ATTACK project...")
@@ -376,9 +568,9 @@ class JiraHandler:
                 r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
                 resp_dict = r.json()
                 for issue in resp_dict['issues']:
-                    technique_id = issue['fields'][custom_fields['id']]
-                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['maturity']] )
-                    #print(technique_id, " ", issue['fields'][custom_fields['maturity']])
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['Maturity']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['Maturity']])
                     res_dict.update({technique_id:issue['fields'][custom_fields['Maturity']]})
                 read_issues+=50
                 startAt+=50
@@ -391,7 +583,103 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             sys.exit()
 
+    def get_technique_nist(self):
 
+        print("[*] Getting issues from the ATTACK project...")
+        custom_fields = self.get_custom_fields()
+        headers = {'Content-Type': 'application/json'}
+        read_issues=0
+        startAt=0
+        res_dict=dict()
+
+        try:
+
+            while(True):
+                #print("Entering while loop. startAt is "+str(startAt))
+                r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
+                resp_dict = r.json()
+                for issue in resp_dict['issues']:
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['NIST']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['NIST']])
+                    res_dict.update({technique_id:issue['fields'][custom_fields['NIST']]})
+                read_issues+=50
+                startAt+=50
+                if (read_issues>=r.json()['total']):
+                    break
+
+            return res_dict
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+            
+            
+    def get_technique_purple(self):
+
+        print("[*] Getting issues from the ATTACK project...")
+        custom_fields = self.get_custom_fields()
+        headers = {'Content-Type': 'application/json'}
+        read_issues=0
+        startAt=0
+        res_dict=dict()
+
+        try:
+
+            while(True):
+                #print("Entering while loop. startAt is "+str(startAt))
+                r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
+                resp_dict = r.json()
+                for issue in resp_dict['issues']:
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['Purple']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['Purple']])
+                    res_dict.update({technique_id:issue['fields'][custom_fields['Purple']]})
+                read_issues+=50
+                startAt+=50
+                if (read_issues>=r.json()['total']):
+                    break
+
+            return res_dict
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+            
+            
+    def get_technique_red(self):
+
+        print("[*] Getting issues from the ATTACK project...")
+        custom_fields = self.get_custom_fields()
+        headers = {'Content-Type': 'application/json'}
+        read_issues=0
+        startAt=0
+        res_dict=dict()
+
+        try:
+
+            while(True):
+                #print("Entering while loop. startAt is "+str(startAt))
+                r = requests.get(self.url + '/rest/api/3/search?jql=project%20%3D%20ATTACK&startAt='+str(startAt), headers=headers, auth=(self.username, self.apitoken), verify=False)
+                resp_dict = r.json()
+                for issue in resp_dict['issues']:
+                    technique_id = issue['fields'][custom_fields['Id']]
+                    #print (issue['fields']['summary']," ",issue['fields'][custom_fields['Red']] )
+                    #print(technique_id, " ", issue['fields'][custom_fields['Red']])
+                    res_dict.update({technique_id:issue['fields'][custom_fields['Red']]})
+                read_issues+=50
+                startAt+=50
+                if (read_issues>=r.json()['total']):
+                    break
+
+            return res_dict
+
+        except Exception as ex:
+            traceback.print_exc(file=sys.stdout)
+            sys.exit()
+            
+            
+            
     def get_attack_datasources(self):
 
         try:
