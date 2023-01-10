@@ -154,6 +154,7 @@ class JiraHandler:
         try:
 
             # maturity field options
+            # https://a77ackmapp1ng.atlassian.net/rest/api/3/field/customfield_10063/context
             payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
             r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
@@ -172,6 +173,7 @@ class JiraHandler:
             r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['Datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the datasources custom field.")
+                print(r)
                 sys.exit()
 
 
@@ -184,7 +186,7 @@ class JiraHandler:
         #print("[*] Getting custom field ids ...")
         custom_fields=['Tactic','Maturity','Url','Datasources','Id','Sub-Technique of']
         headers = {'Content-Type': 'application/json'}
-        resp = dict()
+        resp = {}
 
         try:
             r = requests.get(self.url + '/rest/api/3/field', headers=headers, auth=(self.username, self.apitoken), verify=False)
@@ -234,7 +236,7 @@ class JiraHandler:
         print("[*] Hiding unnecessary fields from ATTACK's issue layout...")
         #screen_tab_ids = self.get_screen_tabs(key)
         project_id=self.get_project_id(key)
-        screen_tab_ids = self.get_project_screen_tab_ids(project_id)
+        screen_ids = self.get_screen_ids(project_id)
         custom_Fields = self.get_custom_fields()
 
         headers = {'Content-Type': 'application/json'}
@@ -250,8 +252,8 @@ class JiraHandler:
         json_string = json_string.replace("SUBTECHNIQUE_CUSTOMFIELD", custom_Fields['Sub-Technique of'])
 
         try:
-            for screen_tab_id in screen_tab_ids:
-                r = requests.put(self.url + '/rest/issuedetailslayout/config/classic/screen?projectIdOrKey='+key+'&screenId='+str(screen_tab_id[0]), data=json_string, headers=headers, auth=(self.username, self.apitoken), verify=False)
+            for screen_id in screen_ids:
+                r = requests.put(self.url + '/rest/issuedetailslayout/config/classic/screen?projectIdOrKey='+key+'&screenId='+str(screen_id), data=json_string, headers=headers, auth=(self.username, self.apitoken), verify=False)
             print("[!] Done.")
 
         except Exception as ex:
@@ -393,14 +395,30 @@ class JiraHandler:
 
 
     def get_attack_datasources(self):
-
+    
         try:
             datasource_payload=[]
             client = attack_client()
-            datasources = list(set(ds.lower() for ds in client.get_data_sources()))
-            for datasource in datasources:
-                dict = {'name': datasource.title()}
-                datasource_payload.append(dict)
+
+            #the datasources obtained via the line below do not correspond with the data sources being present in get_attack_techniques()
+            #datasources = client.get_data_sources()
+
+            #this is likely a temporary workaround
+            data_sources_legacy = []
+            techniques = client.get_techniques()
+            for technique in techniques:
+                try:
+                    data_sources_field = technique['x_mitre_data_sources']
+                except:
+                    pass
+                for ds in data_sources_field:
+                    data_sources_legacy.append(str(ds).title())
+            #making data_sources_legacy records unique
+            data_sources_legacy = list(set(data_sources_legacy))
+            # end of the workaround
+            for datasource in data_sources_legacy:
+                d = {'name': datasource}
+                datasource_payload.append(d)
             return datasource_payload
 
         except:
@@ -424,20 +442,21 @@ class JiraHandler:
             print ("[!] Error connecting obtaining tactics from Att&ck's API !")
             sys.exit()
 
-    def add_custom_fields_to_screen(self, key):    
+    def add_custom_fields_to_screen(self, key):
 
         print("[*] Adding custom fields to ATTACK's default screen tab ...")
         headers = {'Content-Type': 'application/json'}
         project_id=self.get_project_id(key)
-        screen_tab_ids = self.get_project_screen_tab_ids(project_id)
+        screen_tab_ids = self.get_screen_tab_ids(project_id)
+        screen_ids = self.get_screen_ids(project_id)
         custom_fields = self.get_custom_fields()
 
         try:
             for key in custom_fields.keys():
-                for screen_tab_id in screen_tab_ids:
+                for i in range(1):
                     custom_field_dict = {'fieldId': custom_fields[key]}
                     #print (self.url + '/rest/api/2/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields')
-                    r = requests.post(self.url + '/rest/api/3/screens/'+str(screen_tab_id[0])+'/tabs/'+str(screen_tab_id[1])+'/fields', json = custom_field_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)
+                    r = requests.post(self.url + '/rest/api/3/screens/'+str(screen_ids[i])+'/tabs/'+str(screen_tab_ids[i])+'/fields', json = custom_field_dict, headers=headers, auth=(self.username, self.apitoken), verify=False)
 
             print("[!] Done!.")
 
@@ -460,27 +479,79 @@ class JiraHandler:
             print ("[!] Error obtaining project id!")
             sys.exit()
 
-    
-    def get_project_screen_tab_ids(self, project_id):
+    def get_screen_ids(self, project_id):
         headers = {'Content-Type': 'application/json'}
-        screen_tab_ids=[]
+        screen_scheme_ids = self.get_screen_scheme_ids(project_id)
+        screen_ids = []
         try:
-            r = requests.get(self.url +'/rest/api/3/issuetypescreenscheme/mapping?issueTypeScreenSchemeId='+project_id,headers=headers, auth=(self.username, self.apitoken), verify=False) 
-            resp_dict = r.json()
-            for screen in resp_dict['values']:
-                screen_tab_ids.append([screen['screenSchemeId'], self.get_screen_tab_id(screen['screenSchemeId'])])
+            for item in screen_scheme_ids:
+                r = requests.get(a.url +'/rest/api/2/screenscheme?id='+item, headers=headers, auth=(a.username, a.apitoken),verify=False)
+                r_dict = r.json()
+                screen_ids.append(list(r_dict['values'][0]['screens'].values())[0])
+            return screen_ids
 
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen ids!")
+            sys.exit()
+
+
+    def get_screen_scheme_ids(self, project_id):
+        headers = {'Content-Type': 'application/json'}
+        issue_type_screen_scheme_ids = self.get_project_issue_type_screen_scheme_ids(project_id)
+        request_items=[]
+        screen_scheme_ids=[]
+        try:
+            for item in issue_type_screen_scheme_ids:
+                r = requests.get(self.url +'/rest/api/2/issuetypescreenscheme/mapping?issueTypeScreenSchemeId=' + item, headers=headers, auth=(self.username, self.apitoken), verify=False)
+                r_dict=r.json()
+                request_items.append(r_dict)
+            for item in request_items:
+                for subitem in item['values']:
+                    screen_scheme_ids.append(subitem['screenSchemeId'])
+            return  screen_scheme_ids
+        
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen scheme ids!")
+            sys.exit()
+
+    
+    def get_project_issue_type_screen_scheme_ids(self, project_id):
+        headers = {'Content-Type': 'application/json'}
+        query={'projectId': project_id}
+        issue_type_screen_scheme_ids=[]
+        try:
+            r = requests.get(self.url +'/rest/api/3/issuetypescreenscheme/project/', headers=headers, params=query, auth=(self.username, self.apitoken), verify=False) 
+            resp_dict = r.json()
+            for item in resp_dict['values']:
+                issue_type_screen_scheme_ids.append(item['issueTypeScreenScheme']['id'])
+
+            return issue_type_screen_scheme_ids
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining issue type screen scheme ids!")
+            sys.exit()
+    
+    def get_screen_tab_ids(self, project_id):
+        screen_ids = self.get_screen_ids(project_id)
+        screen_tab_ids = []
+        try:
+            for item in screen_ids:
+                screen_tab_id = self.get_screen_tab_id(item)
+                screen_tab_ids.append(screen_tab_id)
             return screen_tab_ids
 
         except:
             traceback.print_exc(file=sys.stdout)
-            print ("[!] Error obtaining screen/tab ids!")
+            print ("[!] Error obtaining screen tab ids!")
             sys.exit()
-    
+
     def get_screen_tab_id(self, screen_id):
         headers = {'Content-Type': 'application/json'}
         try:
-            r = requests.get(self.url +'/rest/api/3/screens/'+screen_id+'/tabs', headers=headers, auth=(self.username, self.apitoken), verify=False) 
+            r = requests.get(self.url +'/rest/api/3/screens/'+str(screen_id)+'/tabs', headers=headers, auth=(self.username, self.apitoken), verify=False) 
             resp_dict = r.json()
             return resp_dict[0]['id']
 
@@ -488,12 +559,3 @@ class JiraHandler:
             traceback.print_exc(file=sys.stdout)
             print ("[!] Error obtaining screen/tab ids!")
             sys.exit()
-
-
-
-
-
-
-
-
-
