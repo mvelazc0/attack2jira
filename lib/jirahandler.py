@@ -154,7 +154,6 @@ class JiraHandler:
         try:
 
             # maturity field options
-            # https://a77ackmapp1ng.atlassian.net/rest/api/3/field/customfield_10063/context
             payload=[{"name":"Not Tracked"},{"name":"Initial"},{"name":"Defined"},{"name":"Resilient"},{"name":"Optimized"}]
             r=requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/'+custom_fields['Maturity'], headers=headers, json= payload, auth=(self.username, self.apitoken),verify=False)
             if r.status_code != 204:
@@ -173,7 +172,6 @@ class JiraHandler:
             r = requests.post(self.url + '/rest/globalconfig/1/customfieldoptions/' + custom_fields['Datasources'], headers=headers, json=payload, auth=(self.username, self.apitoken), verify=False)
             if r.status_code != 204:
                 print("[!] Error creating options for the datasources custom field.")
-                print(r)
                 sys.exit()
 
 
@@ -485,7 +483,7 @@ class JiraHandler:
         screen_ids = []
         try:
             for item in screen_scheme_ids:
-                r = requests.get(a.url +'/rest/api/2/screenscheme?id='+item, headers=headers, auth=(a.username, a.apitoken),verify=False)
+                r = requests.get(self.url +'/rest/api/2/screenscheme?id='+item, headers=headers, auth=(self.username, self.apitoken),verify=False)
                 r_dict = r.json()
                 screen_ids.append(list(r_dict['values'][0]['screens'].values())[0])
             return screen_ids
@@ -534,6 +532,7 @@ class JiraHandler:
             print ("[!] Error obtaining issue type screen scheme ids!")
             sys.exit()
     
+    
     def get_screen_tab_ids(self, project_id):
         screen_ids = self.get_screen_ids(project_id)
         screen_tab_ids = []
@@ -548,12 +547,31 @@ class JiraHandler:
             print ("[!] Error obtaining screen tab ids!")
             sys.exit()
 
+
     def get_screen_tab_id(self, screen_id):
         headers = {'Content-Type': 'application/json'}
         try:
             r = requests.get(self.url +'/rest/api/3/screens/'+str(screen_id)+'/tabs', headers=headers, auth=(self.username, self.apitoken), verify=False) 
             resp_dict = r.json()
             return resp_dict[0]['id']
+
+        except:
+            traceback.print_exc(file=sys.stdout)
+            print ("[!] Error obtaining screen/tab ids!")
+            sys.exit()
+            
+            
+    def get_project_screen_tab_ids(self, project_id):
+    #legacy - not used in the current version
+        headers = {'Content-Type': 'application/json'}
+        screen_tab_ids=[]
+        try:
+            r = requests.get(self.url +'/rest/api/3/issuetypescreenscheme/mapping?issueTypeScreenSchemeId='+project_id,headers=headers, auth=(self.username, self.apitoken), verify=False) 
+            resp_dict = r.json()
+            for screen in resp_dict['values']:
+                screen_tab_ids.append([screen['screenSchemeId'], self.get_screen_tab_id(screen['screenSchemeId'])])
+
+            return screen_tab_ids
 
         except:
             traceback.print_exc(file=sys.stdout)
