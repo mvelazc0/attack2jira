@@ -8,7 +8,7 @@ attack2jira automates the process of standing up a Jira environment that can be 
 
 Visit the Wiki to view the [Demos](https://github.com/mvelazc0/attack2jira/wiki/Demos). attack2jira was first presented at [ATT&CKCon 2.0](https://www.youtube.com/watch?v=hrzR8TpnjAw&t=1198s). For more context, read this [blog post](https://medium.com/@mvelazco/tracking-and-measuring-att-ck-coverage-with-attack2jira-fe700e2a1654).
 
-To allow the community to experiment with this approach, I created a Jira instance hosting the ATTACK project with attack2jira: [https://attack.atlassian.net](https://attack.atlassian.net/projects/ATT/issues)
+To allow the community to experiment with this approach, I created a Jira instance hosting the ATTACK project with attack2jira: [https://attack.atlassian.net/jira/software/c/projects/ATTACK/issues/](https://attack.atlassian.net/jira/software/c/projects/ATTACK/issues/)
 
 attack2jira was designed to be used with Jira Cloud. Specifically, [Jira Software](https://www.atlassian.com/software). 
 
