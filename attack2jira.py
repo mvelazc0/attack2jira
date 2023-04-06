@@ -69,7 +69,13 @@ class Attack2Jira:
                         "issuetype": {"name": "Task"},
                         custom_fields['id']: id,
                         custom_fields['tactic']: {'value': tactic},
-                        custom_fields['maturity']: {'value':'Not Tracked'},
+                        custom_fields['CTI']: {'value': 'Not Tracked'},
+                        custom_fields['Detection']: {'value': 'Not Tracked'},
+                        custom_fields['Hunt']: {'value': 'Not Tracked'},
+                        custom_fields['Maturity']: {'value': 'Not Tracked'},
+                        custom_fields['NIST']: {'value': 'Not Tracked'},
+                        custom_fields['Purple']: {'value': 'Not Tracked'},
+                        custom_fields['Red']: {'value': 'Not Tracked'},
                         custom_fields['url']: url,
                         custom_fields['datasources']: ds_payload,
                         # "customfield_11050": "Value that we're putting into a Free Text Field."
@@ -129,7 +135,13 @@ class Attack2Jira:
                             "issuetype": {"name": "Task"},
                             custom_fields['Id']: id,
                             custom_fields['Tactic']: {'value': tactic},
+                            custom_fields['CTI']: {'value': 'Not Tracked'},
+                            custom_fields['Detection']: {'value': 'Not Tracked'},
+                            custom_fields['Hunt']: {'value': 'Not Tracked'},
                             custom_fields['Maturity']: {'value': 'Not Tracked'},
+                            custom_fields['NIST']: {'value': 'Not Tracked'},
+                            custom_fields['Purple']: {'value': 'Not Tracked'},
+                            custom_fields['Red']: {'value': 'Not Tracked'},
                             custom_fields['Url']: url,
                             custom_fields['Datasources']: ds_payload,
                             # "customfield_11050": "Value that we're putting into a Free Text Field."
@@ -152,7 +164,13 @@ class Attack2Jira:
                             "issuetype": {"name": "Sub-task"},
                             custom_fields['Id']: id,
                             custom_fields['Tactic']: {'value': tactic},
+                            custom_fields['CTI']: {'value': 'Not Tracked'},
+                            custom_fields['Detection']: {'value': 'Not Tracked'},
+                            custom_fields['Hunt']: {'value': 'Not Tracked'},
                             custom_fields['Maturity']: {'value': 'Not Tracked'},
+                            custom_fields['NIST']: {'value': 'Not Tracked'},
+                            custom_fields['Purple']: {'value': 'Not Tracked'},
+                            custom_fields['Red']: {'value': 'Not Tracked'},
                             custom_fields['Url']: url,
                             custom_fields['Datasources']: ds_payload,
                             custom_fields['Sub-Technique of']: jiraclient.url +"/browse/"+parent_id['key'],
@@ -172,10 +190,182 @@ class Attack2Jira:
 
         print("[*] Done!")
 
-    def generate_json_layer(self, hideDisabled):
+    def generate_json_layercti(self, hideDisabled):
         VERSION = "2.2"
-        NAME = "Attack2Jira"
-        DESCRIPTION = "Attack2Jira"
+        NAME = "Attack2JiraCTI"
+        DESCRIPTION = "Attack2JiraCTI"
+        DOMAIN = "mitre-enterprise"
+        GRADIENT = {
+                "colors": [
+                    "#DCDCDC",
+                    "#03ad03"],
+            }
+
+        layer_json = {
+            "domain": DOMAIN,
+            "name": NAME,
+            "description": DESCRIPTION,
+            "gradient": GRADIENT,
+            "version": VERSION,
+            "hideDisabled": hideDisabled,
+            "techniques": [ ]
+        }
+
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
+        res_dict=self.jirahandler.get_technique_cti()
+        for key in res_dict.keys():
+            enabled = True
+            #print (key +" "+ res_dict[key]['value'])
+            if res_dict[key]['value'] == "Not Tracked":
+                enabled=False
+                color = not_tracked_color
+            elif res_dict[key]['value'] == "Initial":
+                color = shade_0_color 
+            elif res_dict[key]['value'] == "Defined":
+                color = shade_1_color 
+            elif res_dict[key]['value'] == "Resilient":
+                color = shade_2_color 
+            elif res_dict[key]['value'] == "Optimized":
+                color = shade_3_color 
+            
+            technique = {
+            "techniqueID": key,
+            "enabled": enabled,
+            "color": color
+            }
+            layer_json["techniques"].append(technique)
+
+        print ("[*] Outputting CTI JSON layer attack2jiracti.json")
+        with open('attack2jiracti.json', 'w', encoding='utf-8') as f:
+            json.dump(layer_json, f, ensure_ascii=False, indent=4)
+        
+
+
+    def generate_json_layerdetection(self, hideDisabled):
+        VERSION = "2.2"
+        NAME = "Attack2JiraDetection"
+        DESCRIPTION = "Attack2JiraDetection"
+        DOMAIN = "mitre-enterprise"
+        GRADIENT = {
+                "colors": [
+                    "#DCDCDC",
+                    "#03ad03"],
+            }
+
+        layer_json = {
+            "domain": DOMAIN,
+            "name": NAME,
+            "description": DESCRIPTION,
+            "gradient": GRADIENT,
+            "version": VERSION,
+            "hideDisabled": hideDisabled,
+            "techniques": [ ]
+        }
+
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
+        res_dict=self.jirahandler.get_technique_detection()
+        for key in res_dict.keys():
+            enabled = True
+            #print (key +" "+ res_dict[key]['value'])
+            if res_dict[key]['value'] == "Not Tracked":
+                enabled=False
+                color = not_tracked_color
+            elif res_dict[key]['value'] == "Initial":
+                color = shade_0_color 
+            elif res_dict[key]['value'] == "Defined":
+                color = shade_1_color 
+            elif res_dict[key]['value'] == "Resilient":
+                color = shade_2_color 
+            elif res_dict[key]['value'] == "Optimized":
+                color = shade_3_color 
+            
+            technique = {
+            "techniqueID": key,
+            "enabled": enabled,
+            "color": color
+            }
+            layer_json["techniques"].append(technique)
+
+        print ("[*] Outputting Detection JSON layer attack2jiradetection.json")
+        with open('attack2jiradetection.json', 'w', encoding='utf-8') as f:
+            json.dump(layer_json, f, ensure_ascii=False, indent=4)
+        
+
+    def generate_json_layerhunt(self, hideDisabled):
+        VERSION = "2.2"
+        NAME = "Attack2JiraHunt"
+        DESCRIPTION = "Attack2JiraHunt"
+        DOMAIN = "mitre-enterprise"
+        GRADIENT = {
+                "colors": [
+                    "#DCDCDC",
+                    "#03ad03"],
+            }
+
+        layer_json = {
+            "domain": DOMAIN,
+            "name": NAME,
+            "description": DESCRIPTION,
+            "gradient": GRADIENT,
+            "version": VERSION,
+            "hideDisabled": hideDisabled,
+            "techniques": [ ]
+        }
+
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
+        res_dict=self.jirahandler.get_technique_hunt()
+        for key in res_dict.keys():
+            enabled = True
+            #print (key +" "+ res_dict[key]['value'])
+            if res_dict[key]['value'] == "Not Tracked":
+                enabled=False
+                color = not_tracked_color
+            elif res_dict[key]['value'] == "Initial":
+                color = shade_0_color 
+            elif res_dict[key]['value'] == "Defined":
+                color = shade_1_color 
+            elif res_dict[key]['value'] == "Resilient":
+                color = shade_2_color 
+            elif res_dict[key]['value'] == "Optimized":
+                color = shade_3_color 
+            
+            technique = {
+            "techniqueID": key,
+            "enabled": enabled,
+            "color": color
+            }
+            layer_json["techniques"].append(technique)
+
+        print ("[*] Outputting Hunt JSON layer attack2jirahunt.json")
+        with open('attack2jirahunt.json', 'w', encoding='utf-8') as f:
+            json.dump(layer_json, f, ensure_ascii=False, indent=4)
+        
+
+    def generate_json_layermaturity(self, hideDisabled):
+        VERSION = "2.2"
+        NAME = "Attack2JiraMaturity"
+        DESCRIPTION = "Attack2JiraMaturity"
         DOMAIN = "mitre-enterprise"
         GRADIENT = {
                 "colors": [
@@ -224,11 +414,183 @@ class Attack2Jira:
             }
             layer_json["techniques"].append(technique)
 
-        print ("[*] Outputting JSON layer attack2jira.json")
-        with open('attack2jira.json', 'w', encoding='utf-8') as f:
+        print ("[*] Outputting Maturity JSON layer attack2jiramaturity.json")
+        with open('attack2jiramaturity.json', 'w', encoding='utf-8') as f:
             json.dump(layer_json, f, ensure_ascii=False, indent=4)
         
 
+    def generate_json_layernist(self, hideDisabled):
+        VERSION = "2.2"
+        NAME = "Attack2JiraNIST"
+        DESCRIPTION = "Attack2JiraNIST"
+        DOMAIN = "mitre-enterprise"
+        GRADIENT = {
+                "colors": [
+                    "#DCDCDC",
+                    "#03ad03"],
+            }
+
+        layer_json = {
+            "domain": DOMAIN,
+            "name": NAME,
+            "description": DESCRIPTION,
+            "gradient": GRADIENT,
+            "version": VERSION,
+            "hideDisabled": hideDisabled,
+            "techniques": [ ]
+        }
+
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
+        res_dict=self.jirahandler.get_technique_nist()
+        for key in res_dict.keys():
+            enabled = True
+            #print (key +" "+ res_dict[key]['value'])
+            if res_dict[key]['value'] == "Not Tracked":
+                enabled=False
+                color = not_tracked_color
+            elif res_dict[key]['value'] == "Initial":
+                color = shade_0_color 
+            elif res_dict[key]['value'] == "Defined":
+                color = shade_1_color 
+            elif res_dict[key]['value'] == "Resilient":
+                color = shade_2_color 
+            elif res_dict[key]['value'] == "Optimized":
+                color = shade_3_color 
+            
+            technique = {
+            "techniqueID": key,
+            "enabled": enabled,
+            "color": color
+            }
+            layer_json["techniques"].append(technique)
+
+        print ("[*] Outputting NIST JSON layer attack2jiranist.json")
+        with open('attack2jiranist.json', 'w', encoding='utf-8') as f:
+            json.dump(layer_json, f, ensure_ascii=False, indent=4)
+        
+
+    def generate_json_layerpurple(self, hideDisabled):
+        VERSION = "2.2"
+        NAME = "Attack2JiraPurple"
+        DESCRIPTION = "Attack2JiraPurple"
+        DOMAIN = "mitre-enterprise"
+        GRADIENT = {
+                "colors": [
+                    "#DCDCDC",
+                    "#03ad03"],
+            }
+
+        layer_json = {
+            "domain": DOMAIN,
+            "name": NAME,
+            "description": DESCRIPTION,
+            "gradient": GRADIENT,
+            "version": VERSION,
+            "hideDisabled": hideDisabled,
+            "techniques": [ ]
+        }
+
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
+        res_dict=self.jirahandler.get_technique_purple()
+        for key in res_dict.keys():
+            enabled = True
+            #print (key +" "+ res_dict[key]['value'])
+            if res_dict[key]['value'] == "Not Tracked":
+                enabled=False
+                color = not_tracked_color
+            elif res_dict[key]['value'] == "Initial":
+                color = shade_0_color 
+            elif res_dict[key]['value'] == "Defined":
+                color = shade_1_color 
+            elif res_dict[key]['value'] == "Resilient":
+                color = shade_2_color 
+            elif res_dict[key]['value'] == "Optimized":
+                color = shade_3_color 
+            
+            technique = {
+            "techniqueID": key,
+            "enabled": enabled,
+            "color": color
+            }
+            layer_json["techniques"].append(technique)
+
+        print ("[*] Outputting Purple JSON layer attack2jirapurple.json")
+        with open('attack2jirapurple.json', 'w', encoding='utf-8') as f:
+            json.dump(layer_json, f, ensure_ascii=False, indent=4)
+        
+
+    def generate_json_layerred(self, hideDisabled):
+        VERSION = "2.2"
+        NAME = "Attack2JiraRed"
+        DESCRIPTION = "Attack2JiraRed"
+        DOMAIN = "mitre-enterprise"
+        GRADIENT = {
+                "colors": [
+                    "#DCDCDC",
+                    "#03ad03"],
+            }
+
+        layer_json = {
+            "domain": DOMAIN,
+            "name": NAME,
+            "description": DESCRIPTION,
+            "gradient": GRADIENT,
+            "version": VERSION,
+            "hideDisabled": hideDisabled,
+            "techniques": [ ]
+        }
+
+        # Define your colors here
+        not_tracked_color = "#DCDCDC"
+        shade_0_color = "#e1fce1" # lightest green
+        shade_1_color = "#81fc81" # lighter green
+        shade_2_color = "#49fc49" # green 
+        shade_3_color = "#03ad03" # darker green
+
+
+        res_dict=self.jirahandler.get_technique_red()
+        for key in res_dict.keys():
+            enabled = True
+            #print (key +" "+ res_dict[key]['value'])
+            if res_dict[key]['value'] == "Not Tracked":
+                enabled=False
+                color = not_tracked_color
+            elif res_dict[key]['value'] == "Initial":
+                color = shade_0_color 
+            elif res_dict[key]['value'] == "Defined":
+                color = shade_1_color 
+            elif res_dict[key]['value'] == "Resilient":
+                color = shade_2_color 
+            elif res_dict[key]['value'] == "Optimized":
+                color = shade_3_color 
+            
+            technique = {
+            "techniqueID": key,
+            "enabled": enabled,
+            "color": color
+            }
+            layer_json["techniques"].append(technique)
+
+        print ("[*] Outputting Red JSON layer attack2jirared.json")
+        with open('attack2jirared.json', 'w', encoding='utf-8') as f:
+            json.dump(layer_json, f, ensure_ascii=False, indent=4)
+        
+
+        
     def set_up_jira_automated(self, project, key):
 
         self.jirahandler.create_project(project, key)
@@ -244,7 +606,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument('-url', dest = 'url', type=str, help= 'Url of Jira instance', default="")
     parser.add_argument('-u', dest = 'user', type=str, help='Username', default="")
-    parser.add_argument('-a', dest='action', type=str, default="", help='action to execute\nTwo supported:\n\'initialize\' will create the JIRA entities. \n\'export\' will export the JSON layer.')
+    parser.add_argument('-a', dest='action', type=str, default="", help='action to execute\nSeven supported:\n\'initialize\' will create the JIRA entities. \n\'exportcti\' will export the CTI JSON layer.\n\'exportdetection\' will export the Detection JSON layer.\n\'exporthunt\' will export the Hunt JSON layer.\n\'exportmaturity\' will export the Maturity JSON layer.\n\'exportnist\' will export the NIST JSON layer.\n\'exportpurple\' will export the Purple JSON layer.\n\'exportred\' will export the Red JSON layer.')
     parser.add_argument('-p', dest = 'project', type=str, help='Name of the Jira project to create.', default="Mitre Attack Framework")
     parser.add_argument('-k', dest = 'key', type=str, help='Project Key.(default=\'ATTACK\')', default="ATTACK")
     parser.add_argument('-hide', help='If set, \'Not Tracked\' techniques will be hidden',action='store_true')
@@ -264,9 +626,27 @@ def main():
             attack2jira = Attack2Jira(url, user, pswd)
             attack2jira.set_up_jira_automated(project, key)
 
-        if (action == "export"):
+        if (action == "exportcti"):
             attack2jira = Attack2Jira(url, user, pswd)
-            attack2jira.generate_json_layer(hideDisabled)
+            attack2jira.generate_json_layercti(hideDisabled)
+        if (action == "exportdetection"):
+            attack2jira = Attack2Jira(url, user, pswd)
+            attack2jira.generate_json_layerdetection(hideDisabled)
+        if (action == "exporthunt"):
+            attack2jira = Attack2Jira(url, user, pswd)
+            attack2jira.generate_json_layerhunt(hideDisabled)
+        if (action == "exportmaturity"):
+            attack2jira = Attack2Jira(url, user, pswd)
+            attack2jira.generate_json_layermaturity(hideDisabled)
+        if (action == "exportnist"):
+            attack2jira = Attack2Jira(url, user, pswd)
+            attack2jira.generate_json_layernist(hideDisabled)
+        if (action == "exportpurple"):
+            attack2jira = Attack2Jira(url, user, pswd)
+            attack2jira.generate_json_layerpurple(hideDisabled)
+        if (action == "exportred"):
+            attack2jira = Attack2Jira(url, user, pswd)
+            attack2jira.generate_json_layerred(hideDisabled)
     else:
         parser.print_help()
 
