@@ -26,7 +26,7 @@ $ pip3 install -r attack2jira/requirements.txt
  
  - You will need a [Jira Software Cloud](https://www.atlassian.com/software) environment.
  - You can set up a [free trial](https://www.atlassian.com/software/jira/free) environment for up to 10 users [here](https://www.atlassian.com/try/cloud/signup?bundle=jira-software&edition=free). 
-- Admin access is required
+ - Admin access is required
 
 ### Usage
  
@@ -34,7 +34,6 @@ $ pip3 install -r attack2jira/requirements.txt
   ```
  $ python3 attack2jira.py -h
  ```
- 
  Create the Jira ATTACK project and issues
  ```
  $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a initialize
@@ -43,6 +42,13 @@ $ pip3 install -r attack2jira/requirements.txt
  ```
  $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a initialize -p 'ATTACK Coverage' -k ATT
  ```
+ Create a Jira Kanban board on existing project and issues
+ ```
+ $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a board 
+ ```
+ >It will then prompt you for the [FilterID](https://community.atlassian.com/t5/Jira-questions/Where-to-find-Filter-ID/qaq-p/81945) and BoardID (if there is not an existing board you'd like to add the tickets to, it will create one for you if you leave blank).
+ Reminder: FilterIDs are neccesary because it specifies the filter for the board. They could be like Select * from PROJECTNAME or you can also specify them to only contain "MITRE".
+
  Export an ATTACK Navigator JSON layer
  ```
  $ python3 attack2jira.py -url https://yourjiracloud.atlassian.net -u user@domain.com -a export
